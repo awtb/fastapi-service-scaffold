@@ -21,3 +21,12 @@ The service exposes `GET /internal/healthcheck`.
 ```bash
 make test
 ```
+{% if include_pre_commit %}
+
+## Pre-commit
+
+```bash
+make hooks
+make pre-commit
+```
+{% endif %}
