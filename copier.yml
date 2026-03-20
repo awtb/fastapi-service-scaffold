@@ -1,0 +1,27 @@
+_min_copier_version: "9"
+_subdirectory: template
+
+project_name:
+  type: str
+  help: Human-readable project name
+  default: My Service
+
+project_slug:
+  type: str
+  help: Repository/distribution slug
+  default: my-service
+
+package_name:
+  type: str
+  help: Python package name
+  default: my_service
+
+project_description:
+  type: str
+  help: Short project description
+  default: Minimal FastAPI service
+
+python_version:
+  type: str
+  help: Python minor version for the project and Docker image
+  default: "3.13"
