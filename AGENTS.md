@@ -4,8 +4,10 @@ This repository is a Copier template for a minimal FastAPI service scaffold.
 
 The generated project is intentionally small:
 - one internal endpoint: `GET /internal/healthcheck`
-- FastAPI app factory in `api/app.py`
-- routers under `api/routers/`
+- FastAPI app factory in `runtimes/http/app.py`
+- HTTP middleware in `runtimes/http/middleware.py`
+- HTTP routers under `runtimes/http/routers/`
+- shared logging bootstrap in `infra/logging/config.py`
 - Typer-based CLI entrypoint in `__main__.py`
 - settings in `settings.py` via `pydantic-settings`
 - `uv` for dependency and runtime workflow
@@ -29,13 +31,33 @@ Expected behavior:
 - CLI is implemented with `typer`
 - `--reload` is a CLI flag
 - host and port come from `Settings`
-- uvicorn runs `"<package_name>.api.app:build_app"` with `factory=True`
+- uvicorn runs `"<package_name>.runtimes.http.app:build_app"` with `factory=True`
 
 If startup behavior changes, update all of these together:
 - `template/__main__.py.jinja`
 - `template/Makefile.jinja`
 - `template/Dockerfile.jinja`
 - `template/README.md.jinja`
+
+## Package Conventions
+
+Generated code separates business capabilities from transport concerns.
+
+- keep business capabilities under `<package_name>/features/`
+- keep shared technical support under `<package_name>/infra/`
+- keep transport adapters under `<package_name>/runtimes/<runtime_name>/`
+- runtime code may import feature use cases
+- feature code must not import runtime code
+
+Recommended feature structure:
+
+- `features/{name}/use_cases/` is the default required part
+- `features/{name}/domain/` is optional and only for real business rules/entities
+- `features/{name}/infra/` is optional and only for persistence or external integrations
+- `features/{name}/ports.py` is optional for feature-owned interfaces
+- `features/{name}/contracts.py` is optional for feature input/output models
+
+Trivial endpoints may stay directly in a runtime handler when extracting a feature would add ceremony without value.
 
 ## Dependency Conventions
 

@@ -13,7 +13,7 @@ def main(
 ) -> None:
     settings = get_settings()
     uvicorn.run(
-        "{{ package_name }}.api.app:build_app",
+        "{{ package_name }}.runtimes.http.app:build_app",
         host=settings.host,
         port=settings.port,
         reload=reload,

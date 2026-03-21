@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from {{ package_name }}.api.lifecycle import lifespan
-from {{ package_name }}.api.routers import api_router
-from {{ package_name }}.logging import configure_logging
-from {{ package_name }}.logging.middleware import RequestLoggingMiddleware
+from {{ package_name }}.infra.logging import configure_logging
+from {{ package_name }}.runtimes.http.lifecycle import lifespan
+from {{ package_name }}.runtimes.http.middleware import RequestLoggingMiddleware
+from {{ package_name }}.runtimes.http.routers import api_router
 from {{ package_name }}.settings import Settings
 from {{ package_name }}.settings import get_settings
 
