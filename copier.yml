@@ -1,5 +1,8 @@
 _min_copier_version: "9"
 _subdirectory: template
+_exclude:
+  - "{% if not include_http_runtime %}{{ package_name }}/runtimes/http{% endif %}"
+  - "{% if not include_http_runtime %}tests/test_healthcheck.py{% endif %}"
 
 project_name:
   type: str
@@ -19,12 +22,17 @@ package_name:
 project_description:
   type: str
   help: Short project description
-  default: Minimal FastAPI service
+  default: Minimal Python service scaffold
 
 python_version:
   type: str
   help: Python minor version for the project and Docker image
   default: "3.13"
+
+include_http_runtime:
+  type: bool
+  help: Include the HTTP runtime built with FastAPI?
+  default: true
 
 include_pre_commit:
   type: bool
