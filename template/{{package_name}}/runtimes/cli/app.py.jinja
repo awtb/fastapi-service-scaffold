@@ -1,0 +1,42 @@
+import typer
+{% if include_http_runtime %}
+import uvicorn
+
+from {{ package_name }}.settings import get_settings
+{% endif %}
+
+app = typer.Typer(
+    help="Service runtime commands.",
+    no_args_is_help=True,
+)
+
+
+@app.callback()
+def cli() -> None:
+    """Service runtime commands."""
+
+
+{% if include_http_runtime %}
+def _run_http_runtime(reload: bool) -> None:
+    settings = get_settings()
+    workers = 1 if reload else settings.workers_count
+    uvicorn.run(
+        "{{ package_name }}.runtimes.http.app:build_app",
+        host=settings.host,
+        port=settings.port,
+        reload=reload,
+        workers=workers,
+        factory=True,
+    )
+
+
+@app.command("http")
+def run_http(
+    reload: bool = typer.Option(
+        False,
+        "--reload",
+        help="Enable auto-reload for local development.",
+    ),
+) -> None:
+    _run_http_runtime(reload=reload)
+{% endif %}
