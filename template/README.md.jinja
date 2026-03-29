@@ -8,6 +8,7 @@
 make run
 ```
 
+{% if include_http_runtime %}
 ## Run With Docker
 
 ```bash
@@ -17,6 +18,13 @@ docker compose up --build
 The HTTP runtime lives in `{{ package_name }}/runtimes/http/`.
 
 The service exposes `GET /internal/healthcheck`.
+
+Set `APP_WORKERS_COUNT` to control uvicorn worker processes in the HTTP runtime.
+{% else %}
+The scaffold currently starts from the CLI entrypoint in `{{ package_name }}/__main__.py`.
+
+No runtime is enabled by default in this variant. Add a runtime under `{{ package_name }}/runtimes/` and register it in the CLI.
+{% endif %}
 
 ## Test
 
