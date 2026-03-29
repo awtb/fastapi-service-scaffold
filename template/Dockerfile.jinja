@@ -16,6 +16,4 @@ RUN uv sync --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-EXPOSE 8000
-
-CMD ["python", "-m", "{{ package_name }}"]
+CMD ["python", "-m", "{{ package_name }}"{% if include_http_runtime %}, "http"{% endif %}]
