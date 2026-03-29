@@ -2,5 +2,7 @@ services:
   app:
     build:
       context: .
+{% if include_http_runtime %}
     ports:
       - "8000:8000"
+{% endif %}
