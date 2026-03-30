@@ -3,7 +3,6 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
-from fastapi import Query
 from fastapi import status
 
 from {{ package_name }}.features.users.contracts import CreateUserCommand
@@ -15,6 +14,8 @@ from {{ package_name }}.features.users.use_cases import ListUsersUseCase
 from {{ package_name }}.runtimes.http.dependencies import get_create_user_use_case
 from {{ package_name }}.runtimes.http.dependencies import get_get_user_use_case
 from {{ package_name }}.runtimes.http.dependencies import get_list_users_use_case
+from {{ package_name }}.runtimes.http.dependencies import get_pagination_params
+from {{ package_name }}.runtimes.http.dependencies import PaginationParams
 from {{ package_name }}.runtimes.http.schemas import CreateUserPayload
 from {{ package_name }}.runtimes.http.schemas import PageResponse
 from {{ package_name }}.runtimes.http.schemas import UserResponse
@@ -46,14 +47,13 @@ async def create_user(
 
 @router.get("", response_model=PageResponse[User])
 async def list_users(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    pagination: PaginationParams = Depends(get_pagination_params),
     use_case: ListUsersUseCase = Depends(get_list_users_use_case),
 ) -> PageResponse[User]:
     users_page = await use_case.execute(
         ListUsersCommand(
-            page=page,
-            page_size=page_size,
+            page=pagination.page,
+            page_size=pagination.page_size,
         )
     )
 
