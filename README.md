@@ -32,6 +32,25 @@ The current template exposes these blocks:
 
 The mental model also includes presets and structure rules, but the concrete switches in the current template are the runtime, integration, and feature blocks above.
 
+## Structure
+
+A generated project is organized around a few small, explicit packages:
+
+- `runtimes/` contains entrypoints and runtime-specific wiring. A runtime is a way to run the service, such as the CLI runtime or the HTTP runtime.
+- `features/` contains business capabilities. Feature code should hold use cases and domain-facing contracts rather than transport details.
+- `infra/` contains infrastructure adapters and shared technical concerns, such as logging and optional database access.
+- `models/` contains shared business models used across features and runtimes.
+- `protocols/` contains interfaces and contracts between business code and infrastructure.
+
+Optional parts are added only when selected:
+
+- `infra/db/` and `alembic/` are included when the PostgreSQL block is enabled.
+- `features/users/` is included when the users block is enabled.
+- `runtimes/http/` is included when the HTTP runtime is enabled.
+- `tests/` contains checks for the blocks that were rendered into the project.
+
+The main rule is separation of concerns: runtime code stays in runtimes, business code stays in features, and infrastructure remains explicit and replaceable.
+
 ## Usage
 
 Render a project with Copier:
