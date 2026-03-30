@@ -1,0 +1,75 @@
+from uuid import UUID
+
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import Query
+from fastapi import status
+
+from {{ package_name }}.features.users.contracts import CreateUserCommand
+from {{ package_name }}.features.users.contracts import GetUserCommand
+from {{ package_name }}.features.users.contracts import ListUsersCommand
+from {{ package_name }}.features.users.use_cases import CreateUserUseCase
+from {{ package_name }}.features.users.use_cases import GetUserUseCase
+from {{ package_name }}.features.users.use_cases import ListUsersUseCase
+from {{ package_name }}.runtimes.http.dependencies import get_create_user_use_case
+from {{ package_name }}.runtimes.http.dependencies import get_get_user_use_case
+from {{ package_name }}.runtimes.http.dependencies import get_list_users_use_case
+from {{ package_name }}.runtimes.http.schemas import CreateUserPayload
+from {{ package_name }}.runtimes.http.schemas import UserResponse
+from {{ package_name }}.runtimes.http.schemas import UsersPageResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    payload: CreateUserPayload,
+    use_case: CreateUserUseCase = Depends(get_create_user_use_case),
+) -> UserResponse:
+    try:
+        user = await use_case.execute(
+            CreateUserCommand(
+                email=payload.email,
+                full_name=payload.full_name,
+            ),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+
+    return user
+
+
+@router.get("", response_model=UsersPageResponse)
+async def list_users(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    use_case: ListUsersUseCase = Depends(get_list_users_use_case),
+) -> UsersPageResponse:
+    users_page = await use_case.execute(
+        ListUsersCommand(
+            page=page,
+            page_size=page_size,
+        )
+    )
+
+    return users_page
+
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: UUID,
+    use_case: GetUserUseCase = Depends(get_get_user_use_case),
+) -> UserResponse:
+    user = await use_case.execute(GetUserCommand(user_id=user_id))
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    return user
