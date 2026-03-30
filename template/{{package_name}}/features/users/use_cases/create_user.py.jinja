@@ -1,0 +1,31 @@
+from {{ package_name }}.features.users.contracts import CreateUserCommand
+from {{ package_name }}.features.users.ports import UsersRepositoryFactory
+from {{ package_name }}.models.user import User
+from {{ package_name }}.protocols import UnitOfWork
+
+
+class CreateUserUseCase:
+    def __init__(
+        self,
+        repository_factory: UsersRepositoryFactory,
+        uow: UnitOfWork,
+    ) -> None:
+        self._repository_factory = repository_factory
+        self._uow = uow
+
+    async def execute(self, command: CreateUserCommand) -> User:
+        async with self._uow as uow:
+            repository = self._repository_factory(uow)
+            normalized_email = command.email.strip().lower()
+            full_name = command.full_name.strip()
+
+            existing_user = await repository.get_by_email(normalized_email)
+            if existing_user is not None:
+                raise ValueError("User with this email already exists.")
+
+            user = await repository.create(
+                email=normalized_email,
+                full_name=full_name,
+            )
+
+        return user
