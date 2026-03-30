@@ -1,11 +1,16 @@
+from .base import BaseSchema
+from .base import PageResponse
+
 {% if include_users_plugin and include_postgresql_plugin %}
 from .users import CreateUserPayload
 from .users import UserResponse
-from .users import UsersPageResponse
+{% endif %}
 
 __all__ = [
+    "BaseSchema",
+    "PageResponse",
+{% if include_users_plugin and include_postgresql_plugin %}
     "CreateUserPayload",
     "UserResponse",
-    "UsersPageResponse",
-]
 {% endif %}
+]
