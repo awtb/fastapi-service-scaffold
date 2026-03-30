@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Depends
 
 from {{ package_name }}.features.users.infra import build_users_repository
 from {{ package_name }}.features.users.use_cases import CreateUserUseCase
@@ -6,23 +6,31 @@ from {{ package_name }}.features.users.use_cases import GetUserUseCase
 from {{ package_name }}.features.users.use_cases import ListUsersUseCase
 from {{ package_name }}.infra.db import SqlAlchemyUnitOfWork
 
+from .db import get_sqlalchemy_uow
 
-def get_create_user_use_case(request: Request) -> CreateUserUseCase:
+
+def get_create_user_use_case(
+    uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
+) -> CreateUserUseCase:
     return CreateUserUseCase(
         repository_factory=build_users_repository,
-        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+        uow=uow,
     )
 
 
-def get_get_user_use_case(request: Request) -> GetUserUseCase:
+def get_get_user_use_case(
+    uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
+) -> GetUserUseCase:
     return GetUserUseCase(
         repository_factory=build_users_repository,
-        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+        uow=uow,
     )
 
 
-def get_list_users_use_case(request: Request) -> ListUsersUseCase:
+def get_list_users_use_case(
+    uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
+) -> ListUsersUseCase:
     return ListUsersUseCase(
         repository_factory=build_users_repository,
-        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+        uow=uow,
     )
