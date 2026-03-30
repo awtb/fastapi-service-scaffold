@@ -1,0 +1,52 @@
+from collections.abc import Callable
+from math import ceil
+from typing import Any
+from typing import Generic
+from typing import TypeVar
+
+from sqlalchemy import func
+from sqlalchemy import Select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import noload
+
+from {{ package_name }}.models.base import BaseModel
+from {{ package_name }}.models.page_result import PageResult
+
+ModelT = TypeVar("ModelT", bound=BaseModel)
+
+
+class BaseRepository(Generic[ModelT]):
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def _fetch(
+        self,
+        query: Select[Any],
+        page: int,
+        page_size: int,
+        mapper_fn: Callable[[Any], ModelT],
+    ) -> PageResult[ModelT]:
+        if page < 1:
+            raise ValueError("page must be greater than 0.")
+
+        if page_size < 1:
+            raise ValueError("page_size must be greater than 0.")
+
+        total = await self._session.scalar(
+            query.order_by(None)
+            .options(noload("*"))
+            .with_only_columns(func.count(), maintain_column_froms=True)
+        )
+        paginated_query = query.offset((page - 1) * page_size).limit(page_size)
+        rows = (await self._session.execute(paginated_query)).unique().scalars().all()
+        items = [mapper_fn(item) for item in rows]
+        total_items = total or 0
+        total_pages = ceil(total_items / page_size) if total_items else 0
+
+        return PageResult(
+            items=items,
+            total_pages=total_pages,
+            page=page,
+            page_size=page_size,
+            total_items=total_items,
+        )
