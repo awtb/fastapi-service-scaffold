@@ -1,3 +1,7 @@
+{% if include_postgresql_plugin %}
+from urllib.parse import quote_plus
+{% endif %}
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +15,16 @@ class Settings(BaseSettings):
     logging_mode: str = "plain"
     logging_lvl: str = "INFO"
     service_name: str = "{{ project_slug }}"
+{% if include_postgresql_plugin %}
+    db_host: str = "localhost"
+    db_port: int = 5432
+    db_name: str = "app"
+    db_user: str = "app"
+    db_password: str = "app"
+    db_driver: str = "postgresql+asyncpg"
+    db_driver_sync: str = "postgresql+psycopg2"
+    db_echo: bool = False
+{% endif %}
 {% if include_http_runtime %}
     host: str = "0.0.0.0"
     port: int = 8000
@@ -21,6 +35,29 @@ class Settings(BaseSettings):
     cors_allow_credentials: bool = False
 {% endif %}
 
+{% if include_postgresql_plugin %}
+    @property
+    def database_url(self) -> str:
+        return self._build_database_url(self.db_driver)
+
+    @property
+    def database_url_sync(self) -> str:
+        return self._build_database_url(self.db_driver_sync)
+
+    def _build_database_url(self, driver: str) -> str:
+        return (
+            f"{driver}://"
+            f"{quote_plus(self.db_user)}:{quote_plus(self.db_password)}"
+            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+        )
+{% endif %}
+
 
 def get_settings() -> Settings:
     return Settings()
+
+
+{% if include_postgresql_plugin %}
+def get_database_settings() -> Settings:
+    return get_settings()
+{% endif %}
