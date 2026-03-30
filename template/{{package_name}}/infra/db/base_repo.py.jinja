@@ -2,6 +2,7 @@ from collections.abc import Callable
 from math import ceil
 from typing import Any
 from typing import Generic
+from typing import Self
 from typing import TypeVar
 
 from sqlalchemy import func
@@ -11,6 +12,7 @@ from sqlalchemy.orm import noload
 
 from {{ package_name }}.models.base import BaseModel
 from {{ package_name }}.models.page_result import PageResult
+from {{ package_name }}.protocols import UnitOfWork
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -18,6 +20,19 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 class BaseRepository(Generic[ModelT]):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    @classmethod
+    def from_uow(cls, uow: UnitOfWork) -> Self:
+        return cls(cls._get_uow_session(uow))
+
+    @staticmethod
+    def _get_uow_session(uow: UnitOfWork) -> AsyncSession:
+        session = getattr(uow, "session", None)
+        if session is None:
+            raise TypeError(
+                "SQLAlchemy repositories require a SQLAlchemy-backed unit of work."
+            )
+        return session
 
     async def _fetch(
         self,
