@@ -1,0 +1,28 @@
+from fastapi import Request
+
+from {{ package_name }}.features.users.infra import build_users_repository
+from {{ package_name }}.features.users.use_cases import CreateUserUseCase
+from {{ package_name }}.features.users.use_cases import GetUserUseCase
+from {{ package_name }}.features.users.use_cases import ListUsersUseCase
+from {{ package_name }}.infra.db import SqlAlchemyUnitOfWork
+
+
+def get_create_user_use_case(request: Request) -> CreateUserUseCase:
+    return CreateUserUseCase(
+        repository_factory=build_users_repository,
+        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+    )
+
+
+def get_get_user_use_case(request: Request) -> GetUserUseCase:
+    return GetUserUseCase(
+        repository_factory=build_users_repository,
+        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+    )
+
+
+def get_list_users_use_case(request: Request) -> ListUsersUseCase:
+    return ListUsersUseCase(
+        repository_factory=build_users_repository,
+        uow=SqlAlchemyUnitOfWork(request.app.state.db_session_factory),
+    )
