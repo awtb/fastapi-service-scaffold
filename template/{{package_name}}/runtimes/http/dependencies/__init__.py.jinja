@@ -1,4 +1,6 @@
 from .db import get_sqlalchemy_uow
+from .pagination import get_pagination_params
+from .pagination import PaginationParams
 
 {% if include_users_plugin and include_postgresql_plugin %}
 from .users import get_create_user_use_case
@@ -8,6 +10,8 @@ from .users import get_list_users_use_case
 
 __all__ = [
     "get_sqlalchemy_uow",
+    "get_pagination_params",
+    "PaginationParams",
 {% if include_users_plugin and include_postgresql_plugin %}
     "get_create_user_use_case",
     "get_get_user_use_case",
