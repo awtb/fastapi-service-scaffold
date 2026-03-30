@@ -6,6 +6,7 @@ PACKAGE_NAME ?= health_service
 PROJECT_DESCRIPTION ?= Minimal Python service scaffold
 PYTHON_VERSION ?= 3.13
 INCLUDE_HTTP_RUNTIME ?= true
+INCLUDE_POSTGRESQL_PLUGIN ?= true
 INCLUDE_PRE_COMMIT ?= false
 RENDER_DIR ?= examples/generated/$(PROJECT_SLUG)
 
@@ -18,6 +19,7 @@ render:
 		-d project_description='$(PROJECT_DESCRIPTION)' \
 		-d python_version='$(PYTHON_VERSION)' \
 		-d include_http_runtime='$(INCLUDE_HTTP_RUNTIME)' \
+		-d include_postgresql_plugin='$(INCLUDE_POSTGRESQL_PLUGIN)' \
 		-d include_pre_commit='$(INCLUDE_PRE_COMMIT)' \
 		. $(RENDER_DIR)
 
@@ -36,7 +38,16 @@ check-template: render
 		PACKAGE_NAME='cli_service' \
 		PROJECT_DESCRIPTION='Minimal Python service scaffold' \
 		INCLUDE_HTTP_RUNTIME=false \
+		INCLUDE_POSTGRESQL_PLUGIN=true \
 		RENDER_DIR='examples/generated/cli-service'
+	$(MAKE) test-rendered \
+		PROJECT_NAME='Stateless Service' \
+		PROJECT_SLUG='stateless-service' \
+		PACKAGE_NAME='stateless_service' \
+		PROJECT_DESCRIPTION='Minimal Python service scaffold' \
+		INCLUDE_HTTP_RUNTIME=true \
+		INCLUDE_POSTGRESQL_PLUGIN=false \
+		RENDER_DIR='examples/generated/stateless-service'
 
 clean-generated:
 	rm -rf examples/generated/*
