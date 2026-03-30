@@ -15,5 +15,3 @@ COPY {{ package_name }} ./{{ package_name }}
 RUN uv sync --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
-
-CMD ["python", "-m", "{{ package_name }}"{% if include_http_runtime %}, "http"{% endif %}]
