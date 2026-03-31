@@ -26,6 +26,8 @@ The current template exposes these blocks:
 
 - CLI runtime, included by default
 - HTTP runtime with FastAPI, optional in the template and enabled in Copier defaults
+- stream runtime with FastStream, optional and requires Redis integration
+- Redis integration, optional
 - PostgreSQL integration, optional
 - users feature package, optional and requires PostgreSQL
 - pre-commit setup, optional
@@ -44,9 +46,11 @@ A generated project is organized around a few small, explicit packages:
 
 Optional parts are added only when selected:
 
+- `infra/redis/` is included when the Redis block is enabled.
 - `infra/db/` and `alembic/` are included when the PostgreSQL block is enabled.
 - `features/users/` is included when the users block is enabled.
 - `runtimes/http/` is included when the HTTP runtime is enabled.
+- `runtimes/stream/` is included when the stream runtime and Redis block are enabled together.
 - `tests/` contains checks for the blocks that were rendered into the project.
 
 The main rule is separation of concerns: runtime code stays in runtimes, business code stays in features, and infrastructure remains explicit and replaceable.
