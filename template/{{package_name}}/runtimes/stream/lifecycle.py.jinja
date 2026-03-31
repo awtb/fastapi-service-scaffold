@@ -1,0 +1,29 @@
+import structlog
+from faststream.redis import RedisBroker
+
+from {{ package_name }}.settings import Settings
+
+logger = structlog.get_logger(__name__)
+
+SETTINGS_CONTEXT_KEY = "stream_runtime_settings"
+
+
+async def startup_runtime(
+    *,
+    broker: RedisBroker,
+    settings: Settings,
+) -> None:
+    broker.context.set_global(SETTINGS_CONTEXT_KEY, settings)
+    logger.info(
+        "Stream runtime startup",
+        service_name=settings.service_name,
+        stream_ping_stream=settings.stream_ping_stream,
+    )
+
+
+async def shutdown_runtime(
+    *,
+    broker: RedisBroker,
+) -> None:
+    broker.context.reset_global(SETTINGS_CONTEXT_KEY)
+    logger.info("Stream runtime shutdown")
