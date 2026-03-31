@@ -8,20 +8,42 @@
 make run
 ```
 
-{% if include_http_runtime %}
+{% if include_http_runtime or include_redis_plugin %}
 ## Run With Docker
 
 ```bash
 docker compose up --build
 ```
+{% endif %}
 
+{% if include_http_runtime %}
 The HTTP runtime lives in `{{ package_name }}/runtimes/http/`.
 
 The service exposes `GET /internal/healthcheck`.
 The service also exposes Prometheus metrics at `GET /internal/metrics`.
 
 Set `APP_WORKERS_COUNT` to control uvicorn worker processes in the HTTP runtime.
-{% else %}
+{% endif %}
+
+{% if include_stream_runtime and include_redis_plugin %}
+## Stream Runtime
+
+The FastStream runtime lives in `{{ package_name }}/runtimes/stream/`.
+
+The current stream scaffold uses the Redis integration as its broker transport.
+
+Run it with:
+
+```bash
+uv run python -m {{ package_name }} stream
+```
+
+Configure Redis with `APP_REDIS_URL`.
+
+The generated runtime subscribes to the Redis stream named by `APP_STREAM_PING_STREAM`.
+{% endif %}
+
+{% if not include_http_runtime and not (include_stream_runtime and include_redis_plugin) %}
 The scaffold currently starts from the CLI entrypoint in `{{ package_name }}/__main__.py`.
 
 No runtime is enabled by default in this variant. Add a runtime under `{{ package_name }}/runtimes/` and register it in the CLI.
@@ -30,6 +52,17 @@ No runtime is enabled by default in this variant. Add a runtime under `{{ packag
 Business capabilities should live under `{{ package_name }}/features/`.
 {% if include_http_runtime %}
 Shared metrics collectors and helpers live under `{{ package_name }}/infra/metrics/`.
+{% endif %}
+{% if include_redis_plugin %}
+
+## Redis
+
+The generated scaffold includes Redis integration helpers under `{{ package_name }}/infra/redis/`.
+
+Redis-facing protocol definitions live under `{{ package_name }}/protocols/redis/`.
+The shared Redis protocol covers common key-value, TTL, counter, and publish operations.
+
+Configure Redis with `APP_REDIS_URL`.
 {% endif %}
 
 {% if include_postgresql_plugin %}
