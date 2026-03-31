@@ -1,0 +1,16 @@
+from faststream.redis import RedisRouter
+
+from {{ package_name }}.settings import Settings
+
+
+def build_router(
+    *,
+    settings: Settings,
+) -> RedisRouter:
+    router = RedisRouter()
+
+    @router.subscriber(stream=settings.stream_ping_stream)
+    async def handle_ping(message: str) -> str:
+        return f"pong:{settings.service_name}:{message}"
+
+    return router
