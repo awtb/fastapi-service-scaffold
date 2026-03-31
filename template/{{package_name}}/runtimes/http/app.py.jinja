@@ -6,6 +6,9 @@ from {{ package_name }}.runtimes.http.lifecycle import lifespan
 from {{ package_name }}.runtimes.http.middlewares import PrometheusMetricsMiddleware
 from {{ package_name }}.runtimes.http.middlewares import RequestLoggingMiddleware
 from {{ package_name }}.runtimes.http.routers import api_router
+{% if include_tg_bot_runtime and include_http_runtime %}
+from {{ package_name }}.runtimes.tg_bot.dispatcher import build_dispatcher
+{% endif %}
 from {{ package_name }}.settings import Settings
 from {{ package_name }}.settings import get_settings
 
@@ -41,6 +44,9 @@ def build_app() -> FastAPI:
     )
     app.state.settings = settings
 
+{% if include_tg_bot_runtime and include_http_runtime %}
+    app.state.telegram_dispatcher = build_dispatcher(settings=settings)
+{% endif %}
     setup_middlewares(app, settings)
     setup_routers(app)
     return app
