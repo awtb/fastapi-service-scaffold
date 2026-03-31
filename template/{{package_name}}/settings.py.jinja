@@ -1,5 +1,5 @@
 {% if include_postgresql_plugin %}
-from urllib.parse import quote_plus
+from sqlalchemy import URL
 {% endif %}
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     cors_allow_headers: list[str] = ["*"]
     cors_allow_credentials: bool = False
 {% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+    telegram_bot_token: str | None = None
+    telegram_webhook_url: str
+{% endif %}
 {% if include_redis_plugin %}
     redis_url: str = "redis://localhost:6379/0"
 {% endif %}
@@ -43,22 +47,23 @@ class Settings(BaseSettings):
 
 {% if include_postgresql_plugin %}
     @property
-    def database_url(self) -> str:
+    def database_url(self) -> URL:
         return self._build_database_url(self.db_driver)
 
     @property
-    def database_url_sync(self) -> str:
+    def database_url_sync(self) -> URL:
         return self._build_database_url(self.db_driver_sync)
 
-    def _build_database_url(self, driver: str) -> str:
-        return (
-            f"{driver}://"
-            f"{quote_plus(self.db_user)}:{quote_plus(self.db_password)}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+    def _build_database_url(self, driver: str) -> URL:
+        return URL.create(
+            drivername=driver,
+            username=self.db_user,
+            password=self.db_password,
+            host=self.db_host,
+            port=self.db_port,
+            database=self.db_name,
         )
 {% endif %}
-
-
 def get_settings() -> Settings:
     return Settings()
 
