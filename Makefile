@@ -11,6 +11,7 @@ INCLUDE_STREAM_RUNTIME ?= false
 INCLUDE_REDIS_PLUGIN ?= false
 INCLUDE_POSTGRESQL_PLUGIN ?= true
 INCLUDE_USERS_PLUGIN ?= false
+INCLUDE_TEMPLATING_COMPONENT ?= false
 INCLUDE_PRE_COMMIT ?= false
 RENDER_DIR ?= examples/generated/$(PROJECT_SLUG)
 
@@ -28,6 +29,7 @@ render:
 			-d include_redis_plugin='$(INCLUDE_REDIS_PLUGIN)' \
 			-d include_postgresql_plugin='$(INCLUDE_POSTGRESQL_PLUGIN)' \
 			-d include_users_plugin='$(INCLUDE_USERS_PLUGIN)' \
+			-d include_templating_component='$(INCLUDE_TEMPLATING_COMPONENT)' \
 			-d include_pre_commit='$(INCLUDE_PRE_COMMIT)' \
 			. $(RENDER_DIR)
 
@@ -99,6 +101,19 @@ check-template: render
 			INCLUDE_POSTGRESQL_PLUGIN=false \
 			INCLUDE_USERS_PLUGIN=false \
 			RENDER_DIR='examples/generated/bot-service'
+		$(MAKE) test-rendered \
+			PROJECT_NAME='Templating Service' \
+			PROJECT_SLUG='templating-service' \
+			PACKAGE_NAME='templating_service' \
+			PROJECT_DESCRIPTION='Minimal Python service scaffold' \
+			INCLUDE_HTTP_RUNTIME=false \
+			INCLUDE_TG_BOT_RUNTIME=false \
+			INCLUDE_STREAM_RUNTIME=false \
+			INCLUDE_REDIS_PLUGIN=false \
+			INCLUDE_POSTGRESQL_PLUGIN=false \
+			INCLUDE_USERS_PLUGIN=false \
+			INCLUDE_TEMPLATING_COMPONENT=true \
+			RENDER_DIR='examples/generated/templating-service'
 
 clean-generated:
 	rm -rf examples/generated/*
