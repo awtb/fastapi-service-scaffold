@@ -49,25 +49,20 @@ async def configure_tg_bot(
 
 async def setup_tg_bot_runtime(app: FastAPI) -> None:
     settings = load_runtime_settings(app)
-    if not settings.telegram_bot_token:
-        logger.warning(
-            "Telegram bot setup skipped",
-            reason="APP_TELEGRAM_BOT_TOKEN not set",
-        )
-        return
+    bot: Bot = app.state.telegram_bot
+    await configure_tg_bot(
+        bot=bot,
+        settings=settings,
+    )
+    logger.info(
+        "Telegram bot configured",
+        telegram_webhook_url=settings.telegram_webhook_url,
+    )
 
-    bot = Bot(token=settings.telegram_bot_token)
-    try:
-        await configure_tg_bot(
-            bot=bot,
-            settings=settings,
-        )
-        logger.info(
-            "Telegram bot configured",
-            telegram_webhook_url=settings.telegram_webhook_url,
-        )
-    finally:
-        await bot.session.close()
+
+async def teardown_tg_bot_runtime(app: FastAPI) -> None:
+    bot: Bot = app.state.telegram_bot
+    await bot.session.close()
 {% endif %}
 
 
@@ -86,5 +81,8 @@ async def lifespan(app: FastAPI):
     finally:
 {% if include_postgresql_plugin %}
         await teardown_db_runtime(app)
+{% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+        await teardown_tg_bot_runtime(app)
 {% endif %}
         logger.info("Application shutdown")
