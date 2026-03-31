@@ -31,6 +31,7 @@ The current template exposes these blocks:
 - Redis integration, optional
 - PostgreSQL integration, optional
 - users feature package, optional and requires PostgreSQL
+- templating component with a Jinja-based template adapter, optional
 - pre-commit setup, optional
 
 The mental model also includes presets and structure rules, but the concrete switches in the current template are the runtime, integration, and feature blocks above.
@@ -50,6 +51,7 @@ Optional parts are added only when selected:
 - `infra/redis/` is included when the Redis block is enabled.
 - `infra/db/` and `alembic/` are included when the PostgreSQL block is enabled.
 - `features/users/` is included when the users block is enabled.
+- `infra/templating/` and `protocols/templating/` are included when the templating component is enabled.
 - `runtimes/http/` is included when the HTTP runtime is enabled.
 - `runtimes/tg_bot/` is included when the Telegram bot component is enabled with the HTTP runtime.
 - `runtimes/stream/` is included when the stream runtime and Redis block are enabled together.
