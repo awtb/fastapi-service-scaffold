@@ -1,0 +1,22 @@
+from typing import Any
+
+from starlette.routing import BaseRoute
+
+
+def resolve_request_route(scope: dict[str, Any]) -> str:
+    route = scope.get("route")
+
+    if isinstance(route, BaseRoute):
+        path = getattr(route, "path", None) or getattr(route, "path_format", None)
+        if isinstance(path, str):
+            return path
+
+    path = scope.get("path")
+    if isinstance(path, str):
+        return path
+
+    return "unknown"
+
+
+def status_code_to_class(status_code: int) -> str:
+    return f"{status_code // 100}xx"
