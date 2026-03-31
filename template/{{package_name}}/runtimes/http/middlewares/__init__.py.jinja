@@ -1,5 +1,8 @@
+from {{ package_name }}.runtimes.http.middlewares.prometheus_metrics import (
+    PrometheusMetricsMiddleware,
+)
 from {{ package_name }}.runtimes.http.middlewares.request_logging import (
     RequestLoggingMiddleware,
 )
 
-__all__ = ["RequestLoggingMiddleware"]
+__all__ = ["PrometheusMetricsMiddleware", "RequestLoggingMiddleware"]
