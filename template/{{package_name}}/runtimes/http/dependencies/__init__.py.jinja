@@ -1,6 +1,12 @@
-from .db import get_sqlalchemy_uow
 from .pagination import get_pagination_params
 from .pagination import PaginationParams
+{% if include_postgresql_plugin %}
+from .db import get_sqlalchemy_uow
+{% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+from .tg_bot import get_tg_bot
+from .tg_bot import get_tg_bot_dispatcher
+{% endif %}
 
 {% if include_users_plugin and include_postgresql_plugin %}
 from .users import get_create_user_use_case
@@ -9,9 +15,15 @@ from .users import get_list_users_use_case
 {% endif %}
 
 __all__ = [
+{% if include_postgresql_plugin %}
     "get_sqlalchemy_uow",
+{% endif %}
     "get_pagination_params",
     "PaginationParams",
+{% if include_tg_bot_runtime and include_http_runtime %}
+    "get_tg_bot",
+    "get_tg_bot_dispatcher",
+{% endif %}
 {% if include_users_plugin and include_postgresql_plugin %}
     "get_create_user_use_case",
     "get_get_user_use_case",
