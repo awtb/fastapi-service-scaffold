@@ -25,6 +25,9 @@ dependencies = [
   "prometheus-client>=0.22,<1.0",
   "uvicorn[standard]>=0.30,<1.0",
 {% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+  "aiogram>=3.24,<4.0",
+{% endif %}
 {% if include_redis_plugin and not include_stream_runtime %}
   "redis>=7.2,<8.0",
 {% endif %}
