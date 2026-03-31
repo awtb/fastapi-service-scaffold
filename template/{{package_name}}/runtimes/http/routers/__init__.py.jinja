@@ -1,12 +1,18 @@
 from fastapi import APIRouter
 
 from {{ package_name }}.runtimes.http.routers.internal import router as internal_router
+{% if include_tg_bot_runtime and include_http_runtime %}
+from {{ package_name }}.runtimes.http.routers.telegram import router as telegram_router
+{% endif %}
 {% if include_users_plugin and include_postgresql_plugin %}
 from {{ package_name }}.runtimes.http.routers.users import router as users_router
 {% endif %}
 
 api_router = APIRouter()
 api_router.include_router(internal_router)
+{% if include_tg_bot_runtime and include_http_runtime %}
+api_router.include_router(telegram_router)
+{% endif %}
 {% if include_users_plugin and include_postgresql_plugin %}
 api_router.include_router(users_router)
 {% endif %}
