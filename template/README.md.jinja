@@ -79,6 +79,17 @@ Business capabilities should live under `{{ package_name }}/features/`.
 {% if include_http_runtime %}
 Shared metrics collectors and helpers live under `{{ package_name }}/infra/metrics/`.
 {% endif %}
+{% if include_templating_component %}
+
+## Templating Component
+
+The generated scaffold includes a Jinja-based template renderer under `{{ package_name }}/infra/templating/`.
+
+Template rendering contracts live under `{{ package_name }}/protocols/templating/`.
+The adapter-owned templates live under `{{ package_name }}/infra/templating/templates/`.
+
+The generated sample includes `greeting.jinja`, and the renderer can load it directly from the package.
+{% endif %}
 {% if include_redis_plugin %}
 
 ## Redis
