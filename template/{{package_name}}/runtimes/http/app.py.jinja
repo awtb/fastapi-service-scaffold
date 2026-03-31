@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from {{ package_name }}.infra.logging import configure_logging
 from {{ package_name }}.runtimes.http.lifecycle import lifespan
+from {{ package_name }}.runtimes.http.middlewares import PrometheusMetricsMiddleware
 from {{ package_name }}.runtimes.http.middlewares import RequestLoggingMiddleware
 from {{ package_name }}.runtimes.http.routers import api_router
 from {{ package_name }}.settings import Settings
@@ -12,6 +13,9 @@ from {{ package_name }}.settings import get_settings
 def setup_middlewares(app_instance: FastAPI, settings: Settings) -> None:
     app_instance.add_middleware(
         RequestLoggingMiddleware,
+    )
+    app_instance.add_middleware(
+        PrometheusMetricsMiddleware,
     )
     app_instance.add_middleware(
         CORSMiddleware,
