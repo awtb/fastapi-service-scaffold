@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+{% if include_tg_bot_runtime and include_http_runtime %}
+from aiogram import Bot
+{% endif %}
 
 from {{ package_name }}.infra.logging import configure_logging
 from {{ package_name }}.runtimes.http.lifecycle import lifespan
@@ -45,6 +48,7 @@ def build_app() -> FastAPI:
     app.state.settings = settings
 
 {% if include_tg_bot_runtime and include_http_runtime %}
+    app.state.telegram_bot = Bot(token=settings.telegram_bot_token)
     app.state.telegram_dispatcher = build_dispatcher(settings=settings)
 {% endif %}
     setup_middlewares(app, settings)
