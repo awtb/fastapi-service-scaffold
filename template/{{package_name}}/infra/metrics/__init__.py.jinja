@@ -1,0 +1,11 @@
+from {{ package_name }}.infra.metrics.collectors import http_request_duration_seconds
+from {{ package_name }}.infra.metrics.collectors import http_requests_in_progress
+from {{ package_name }}.infra.metrics.collectors import http_requests_total
+from {{ package_name }}.infra.metrics.collectors import render_metrics
+
+__all__ = [
+    "http_request_duration_seconds",
+    "http_requests_in_progress",
+    "http_requests_total",
+    "render_metrics",
+]
