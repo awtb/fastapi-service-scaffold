@@ -7,6 +7,7 @@ _exclude:
   - "{% if not include_tg_bot_runtime or not include_http_runtime %}{{ package_name }}/runtimes/tg_bot{% endif %}"
   - "{% if not include_tg_bot_runtime or not include_http_runtime %}tests/test_tg_bot_runtime.py{% endif %}"
   - "{% if not include_tg_bot_runtime or not include_http_runtime %}{{ package_name }}/runtimes/http/routers/telegram.py{% endif %}"
+  - "{% if not include_tg_bot_runtime or not include_http_runtime %}{{ package_name }}/runtimes/http/dependencies/tg_bot.py{% endif %}"
   - "{% if not include_redis_plugin %}{{ package_name }}/infra/redis{% endif %}"
   - "{% if not include_stream_runtime or not include_redis_plugin %}{{ package_name }}/runtimes/stream{% endif %}"
   - "{% if not include_stream_runtime or not include_redis_plugin %}tests/test_stream_runtime.py{% endif %}"
