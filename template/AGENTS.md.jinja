@@ -1,0 +1,72 @@
+# AGENTS.md
+
+## Project
+
+`{{ project_name }}` is a small Python service generated from `python-service-scaffold`.
+
+The codebase is organized around explicit building blocks:
+
+- `runtimes` for ways to run the service
+- `features` for business capabilities
+- `infra` for technical adapters and shared infrastructure
+- `models` for shared business models
+- `protocols` for cross-layer interfaces
+
+Keep the structure small and predictable. Prefer placing code into an existing package over creating new top-level directories.
+
+## Placement rules
+
+When adding or changing code, use these rules first:
+
+- Put runtime entrypoints, request/response wiring, and transport-specific adapters in `{{ package_name }}/runtimes/`.
+- Put business use cases and feature-specific contracts in `{{ package_name }}/features/`.
+- Put shared domain models used by multiple features or runtimes in `{{ package_name }}/models/`.
+- Put infrastructure adapters and technical wiring in `{{ package_name }}/infra/`.
+- Put interfaces between business code and infrastructure in `{{ package_name }}/protocols/`.
+- Put tests in `tests/`, close to the behavior they verify.
+- Put project-wide operational notes in `README.md`, not inside package modules.
+
+## Concretely, store things here
+
+- New CLI commands or startup wiring: `{{ package_name }}/runtimes/cli/`
+- New HTTP routers, dependencies, schemas, lifecycle hooks, and middleware: `{{ package_name }}/runtimes/http/`
+- Feature business flows: `{{ package_name }}/features/<feature_name>/use_cases/`
+- Feature-specific ports or contracts: `{{ package_name }}/features/<feature_name>/`
+- If a feature accumulates too many contracts, split `contracts.py` into `{{ package_name }}/features/<feature_name>/contracts/` instead of keeping one large module.
+- Feature-specific infrastructure that should stay close to the feature: `{{ package_name }}/features/<feature_name>/infra/`
+- Shared settings and config models: `{{ package_name }}/settings.py`
+- Shared logging setup: `{{ package_name }}/infra/logging/`
+- Database session management and unit-of-work code: `{{ package_name }}/infra/db/`
+- SQLAlchemy database models: `{{ package_name }}/infra/db/models/`
+- Database migrations: `alembic/`
+
+## Boundaries
+
+- Do not put business logic into runtime modules when it can live in a feature use case.
+- Do not put HTTP-specific or CLI-specific code into `features/`.
+- Do not make `features/` depend directly on FastAPI, Click, SQLAlchemy sessions, or other runtime details when a port or protocol is enough.
+- Do not add hidden framework layers or generic base abstractions unless the codebase already needs them in multiple places.
+- Do not create a new top-level package for a concern that fits under `runtimes`, `features`, `infra`, `models`, or `protocols`.
+
+## Examples
+
+- Complex feature example: an `orders` feature can live under `{{ package_name }}/features/orders/` with `use_cases/create_order.py`, `use_cases/cancel_order.py`, `use_cases/get_order.py`, feature contracts or ports in the package root, and persistence adapters in `{{ package_name }}/features/orders/infra/`.
+- Workflow-heavy feature example: a `billing` or `subscriptions` feature should keep orchestration and business rules in `{{ package_name }}/features/<feature_name>/use_cases/`, expose only feature-level contracts to runtimes, and keep payment-provider or storage adapters outside the runtime layer.
+- Shared model example: if `orders`, `billing`, and HTTP pagination all need the same business entity or page result, place the shared type in `{{ package_name }}/models/` instead of redefining it inside each feature or runtime schema package.
+- Integration example: if `orders` needs persistence, keep database session handling in `{{ package_name }}/infra/db/`, keep ORM models in `{{ package_name }}/infra/db/models/`, and keep order-specific mapping or repository code near the feature or in explicit infrastructure adapters.
+
+## Working style
+
+- Keep generated code easy to delete, replace, or simplify.
+- Prefer explicit wiring over magic.
+- Keep optional integrations isolated so they can be removed without rewriting unrelated business code.
+- If a change is runtime-specific, keep it inside that runtime package.
+- If a change is business-specific, prefer a feature package even if only one runtime uses it today.
+
+## Common commands
+
+- Run locally: `make run`
+- Run tests: `make test`
+{% if include_pre_commit -%}
+- Run pre-commit: `make pre-commit`
+{% endif -%}
