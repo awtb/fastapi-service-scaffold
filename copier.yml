@@ -2,6 +2,7 @@ _min_copier_version: "9"
 _subdirectory: template
 _exclude:
   - "{% if not include_http_runtime %}{{ package_name }}/runtimes/http{% endif %}"
+  - "{% if not include_http_runtime %}{{ package_name }}/infra/metrics{% endif %}"
   - "{% if not include_http_runtime %}tests/test_healthcheck.py{% endif %}"
   - "{% if not include_postgresql_plugin %}{{ package_name }}/infra/db{% endif %}"
   - "{% if not include_postgresql_plugin %}alembic.ini{% endif %}"
