@@ -1,0 +1,33 @@
+from typing import Protocol
+
+RedisValue = str | bytes | int | float
+
+
+class RedisClient(Protocol):
+    async def get(self, name: str) -> str | None: ...
+
+    async def set(
+        self,
+        name: str,
+        value: RedisValue,
+        ex: int | None = None,
+        nx: bool = False,
+    ) -> bool | None: ...
+
+    async def delete(self, *names: str) -> int: ...
+
+    async def exists(self, *names: str) -> int: ...
+
+    async def expire(self, name: str, time: int) -> bool: ...
+
+    async def incr(self, name: str, amount: int = 1) -> int: ...
+
+    async def publish(self, channel: str, message: RedisValue) -> int: ...
+
+    async def ping(self, message: str | None = None) -> bool | str: ...
+
+    async def close(self) -> None: ...
+
+
+class RedisClientFactory(Protocol):
+    def __call__(self) -> RedisClient: ...
