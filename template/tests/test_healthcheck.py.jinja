@@ -13,6 +13,21 @@ def test_healthcheck() -> None:
     assert "X-Request-ID" in response.headers
 
 
+def test_metrics_endpoint() -> None:
+    client = TestClient(build_app())
+
+    healthcheck_response = client.get("/internal/healthcheck")
+    metrics_response = client.get("/internal/metrics")
+
+    assert healthcheck_response.status_code == 200
+    assert metrics_response.status_code == 200
+    assert "http_requests_total" in metrics_response.text
+    assert "http_request_duration_seconds" in metrics_response.text
+    assert 'route="/internal/healthcheck"' in metrics_response.text
+    assert 'method="GET"' in metrics_response.text
+    assert 'status_class="2xx"' in metrics_response.text
+
+
 def test_cors_preflight() -> None:
     client = TestClient(build_app())
 
