@@ -2,6 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 import structlog
+{% if include_tg_bot_runtime and include_http_runtime %}
+from aiogram import Bot
+
+from {{ package_name }}.runtimes.tg_bot.commands import build_commands
+{% endif %}
 
 {% if include_postgresql_plugin %}
 from {{ package_name }}.infra.db import create_db_engine
@@ -29,6 +34,41 @@ def setup_db_runtime(app: FastAPI) -> None:
 async def teardown_db_runtime(app: FastAPI) -> None:
     await app.state.db_engine.dispose()
 {% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+
+
+async def configure_tg_bot(
+    *,
+    bot: Bot,
+    settings: Settings,
+) -> None:
+    commands = build_commands()
+    await bot.set_my_commands(commands)
+    await bot.set_webhook(url=settings.telegram_webhook_url)
+
+
+async def setup_tg_bot_runtime(app: FastAPI) -> None:
+    settings = load_runtime_settings(app)
+    if not settings.telegram_bot_token:
+        logger.warning(
+            "Telegram bot setup skipped",
+            reason="APP_TELEGRAM_BOT_TOKEN not set",
+        )
+        return
+
+    bot = Bot(token=settings.telegram_bot_token)
+    try:
+        await configure_tg_bot(
+            bot=bot,
+            settings=settings,
+        )
+        logger.info(
+            "Telegram bot configured",
+            telegram_webhook_url=settings.telegram_webhook_url,
+        )
+    finally:
+        await bot.session.close()
+{% endif %}
 
 
 @asynccontextmanager
@@ -36,6 +76,9 @@ async def lifespan(app: FastAPI):
     load_runtime_settings(app)
 {% if include_postgresql_plugin %}
     setup_db_runtime(app)
+{% endif %}
+{% if include_tg_bot_runtime and include_http_runtime %}
+    await setup_tg_bot_runtime(app)
 {% endif %}
     logger.info("Application startup")
     try:
