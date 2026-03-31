@@ -1,3 +1,6 @@
 from {{ package_name }}.protocols.db import UnitOfWork
+from {{ package_name }}.protocols.redis import RedisClient
+from {{ package_name }}.protocols.redis import RedisClientFactory
+from {{ package_name }}.protocols.redis import RedisValue
 
-__all__ = ["UnitOfWork"]
+__all__ = ["RedisClient", "RedisClientFactory", "RedisValue", "UnitOfWork"]
