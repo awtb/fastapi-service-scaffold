@@ -1,0 +1,12 @@
+from aiogram import Dispatcher
+
+from {{ package_name }}.runtimes.tg_bot.routers import router as tg_bot_router
+from {{ package_name }}.settings import Settings
+
+dispatcher = Dispatcher()
+dispatcher.include_router(tg_bot_router)
+
+
+def build_dispatcher(*, settings: Settings) -> Dispatcher:
+    dispatcher["settings"] = settings
+    return dispatcher
