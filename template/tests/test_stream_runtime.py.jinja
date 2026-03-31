@@ -1,0 +1,22 @@
+import asyncio
+
+from faststream.redis import TestRedisBroker
+
+from {{ package_name }}.runtimes.stream.app import broker
+from {{ package_name }}.settings import get_settings
+
+
+def test_stream_runtime_ping() -> None:
+    asyncio.run(_test_stream_runtime_ping())
+
+
+async def _test_stream_runtime_ping() -> None:
+    settings = get_settings()
+
+    async with TestRedisBroker(broker) as test_broker:
+        response = await test_broker.request(
+            "ping",
+            stream=settings.stream_ping_stream,
+        )
+
+    assert await response.decode() == f"pong:{settings.service_name}:ping"
