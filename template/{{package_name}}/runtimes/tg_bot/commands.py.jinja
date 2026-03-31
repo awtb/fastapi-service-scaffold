@@ -1,0 +1,8 @@
+from aiogram.types import BotCommand
+
+
+def build_commands() -> list[BotCommand]:
+    return [
+        BotCommand(command="start", description="Start the bot"),
+        BotCommand(command="ping", description="Check bot availability"),
+    ]
