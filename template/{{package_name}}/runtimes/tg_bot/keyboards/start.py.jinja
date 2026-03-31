@@ -1,0 +1,17 @@
+from aiogram.types import InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup
+
+from {{ package_name }}.runtimes.tg_bot.callbacks import PingCallback
+
+
+def build_start_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Ping",
+                    callback_data=PingCallback(action="ping").pack(),
+                ),
+            ],
+        ],
+    )
