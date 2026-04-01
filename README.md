@@ -24,7 +24,7 @@ A generated project is assembled from a few kinds of generation-time blocks:
 - integrations: infrastructure such as PostgreSQL or Redis
 - components: optional adapters such as Telegram bot support or templating
 - features: ready-to-use business slices, such as the sample users package
-- tooling: project-level setup such as pre-commit
+- tooling: project-level setup such as generated tests or pre-commit
 
 The main rule is composition over magic. If a block is not selected, it should not appear in the generated codebase.
 
@@ -61,6 +61,7 @@ The current scaffold supports:
 - PostgreSQL integration
 - users feature package, requires PostgreSQL
 - templating component with an async Jinja adapter
+- generated tests for enabled blocks
 - pre-commit setup
 
 ## Generated Structure
@@ -72,7 +73,7 @@ Generated projects use a small, predictable layout:
 - `infra/` for technical adapters and integration code
 - `protocols/` for interfaces between layers
 - `models/` for shared business models
-- `tests/` for checks covering rendered blocks
+- `tests/` for grouped unit, integration, and end-to-end checks, when tests are enabled
 
 These packages are not separate scaffold block types.
 They are the fixed project structure used to place whatever blocks were enabled.
@@ -182,6 +183,7 @@ The default Copier flow currently enables:
 
 - CLI runtime
 - HTTP runtime
+- generated tests
 
 And leaves these opt-in:
 
@@ -192,6 +194,8 @@ And leaves these opt-in:
 - users feature
 - templating
 - pre-commit
+
+Generated tests are included by default and can be disabled when you want a smaller starting point.
 
 ## Design Intent
 
