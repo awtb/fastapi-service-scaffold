@@ -13,6 +13,7 @@ INCLUDE_POSTGRESQL_PLUGIN ?= true
 INCLUDE_USERS_PLUGIN ?= false
 INCLUDE_TEMPLATING_COMPONENT ?= false
 INCLUDE_PRE_COMMIT ?= false
+INCLUDE_TESTS ?= true
 RENDER_DIR ?= examples/generated/$(PROJECT_SLUG)
 
 render:
@@ -31,10 +32,15 @@ render:
 			-d include_users_plugin='$(INCLUDE_USERS_PLUGIN)' \
 			-d include_templating_component='$(INCLUDE_TEMPLATING_COMPONENT)' \
 			-d include_pre_commit='$(INCLUDE_PRE_COMMIT)' \
+			-d include_tests='$(INCLUDE_TESTS)' \
 			. $(RENDER_DIR)
 
 test-rendered: render
+ifeq ($(INCLUDE_TESTS),true)
 	$(MAKE) -C $(RENDER_DIR) test
+else
+	@echo "Rendered project tests are disabled; skipping."
+endif
 
 compose-config-rendered: render
 	docker compose -f $(RENDER_DIR)/compose.yaml config
