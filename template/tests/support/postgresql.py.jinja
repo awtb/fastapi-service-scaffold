@@ -1,0 +1,133 @@
+from collections.abc import Iterator
+from dataclasses import dataclass
+import os
+from pathlib import Path
+import asyncio
+
+import pytest
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import create_engine
+from sqlalchemy import text
+from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import create_async_engine
+from testcontainers.postgres import PostgresContainer
+
+from {{ package_name }}.infra.db.models import Base
+
+
+@dataclass(frozen=True, slots=True)
+class PostgresTestSettings:
+    host: str
+    port: int
+    name: str
+    user: str
+    password: str
+    driver: str
+    driver_sync: str
+    async_url: str
+
+
+def _build_postgres_test_settings(container: PostgresContainer) -> PostgresTestSettings:
+    async_url = make_url(container.get_connection_url(driver="asyncpg"))
+    sync_url = make_url(container.get_connection_url(driver="psycopg2"))
+    return PostgresTestSettings(
+        host=async_url.host or "localhost",
+        port=async_url.port or 5432,
+        name=async_url.database or "app",
+        user=async_url.username or "app",
+        password=async_url.password or "app",
+        driver=async_url.drivername,
+        driver_sync=sync_url.drivername,
+        async_url=async_url.render_as_string(hide_password=False),
+    )
+
+
+def _build_alembic_config() -> Config:
+    config = Config("alembic.ini")
+    config.set_main_option("script_location", "alembic")
+    return config
+
+
+def _has_alembic_revisions(config: Config) -> bool:
+    versions_dir = Path(config.get_main_option("script_location")) / "versions"
+    return any(
+        path.is_file() and path.suffix == ".py"
+        for path in versions_dir.iterdir()
+    )
+
+
+def _apply_database_env(settings: PostgresTestSettings) -> dict[str, str | None]:
+    env_updates = {
+        "APP_DB_HOST": settings.host,
+        "APP_DB_PORT": str(settings.port),
+        "APP_DB_NAME": settings.name,
+        "APP_DB_USER": settings.user,
+        "APP_DB_PASSWORD": settings.password,
+        "APP_DB_DRIVER": settings.driver,
+        "APP_DB_DRIVER_SYNC": settings.driver_sync,
+    }
+    previous_env = {key: os.environ.get(key) for key in env_updates}
+    os.environ.update(env_updates)
+    return previous_env
+
+
+def _restore_database_env(previous_env: dict[str, str | None]) -> None:
+    for key, value in previous_env.items():
+        if value is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = value
+
+
+def _reset_database_with_migrations(settings: PostgresTestSettings) -> None:
+    engine = create_engine(
+        make_url(settings.async_url).set(drivername=settings.driver_sync)
+    )
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
+            connection.execute(text("CREATE SCHEMA public"))
+
+        previous_env = _apply_database_env(settings)
+        try:
+            command.upgrade(_build_alembic_config(), "head")
+        finally:
+            _restore_database_env(previous_env)
+    finally:
+        engine.dispose()
+
+
+def _reset_database_with_metadata(settings: PostgresTestSettings) -> None:
+    engine = create_async_engine(settings.async_url)
+
+    async def _reset_database() -> None:
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
+            await connection.run_sync(Base.metadata.create_all)
+
+    try:
+        asyncio.run(_reset_database())
+    finally:
+        asyncio.run(engine.dispose())
+
+
+@pytest.fixture(scope="session")
+def postgres_container() -> Iterator[PostgresContainer]:
+    with PostgresContainer("postgres:17-alpine", driver="psycopg2") as container:
+        yield container
+
+
+@pytest.fixture
+def postgres_database(
+    postgres_container: PostgresContainer,
+) -> Iterator[PostgresTestSettings]:
+    settings = _build_postgres_test_settings(postgres_container)
+    alembic_config = _build_alembic_config()
+
+    if _has_alembic_revisions(alembic_config):
+        _reset_database_with_migrations(settings)
+    else:
+        _reset_database_with_metadata(settings)
+
+    yield settings
