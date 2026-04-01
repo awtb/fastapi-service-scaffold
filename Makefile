@@ -8,9 +8,9 @@ PYTHON_VERSION ?= 3.13
 INCLUDE_HTTP_RUNTIME ?= true
 INCLUDE_TG_BOT_RUNTIME ?= false
 INCLUDE_STREAM_RUNTIME ?= false
-INCLUDE_REDIS_PLUGIN ?= false
-INCLUDE_POSTGRESQL_PLUGIN ?= true
-INCLUDE_USERS_PLUGIN ?= false
+INCLUDE_REDIS_INTEGRATION ?= false
+INCLUDE_POSTGRESQL_INTEGRATION ?= true
+INCLUDE_USERS_FEATURE ?= false
 INCLUDE_TEMPLATING_COMPONENT ?= false
 INCLUDE_PRE_COMMIT ?= false
 INCLUDE_TESTS ?= true
@@ -27,9 +27,9 @@ render:
 			-d include_http_runtime='$(INCLUDE_HTTP_RUNTIME)' \
 			-d include_tg_bot_runtime='$(INCLUDE_TG_BOT_RUNTIME)' \
 			-d include_stream_runtime='$(INCLUDE_STREAM_RUNTIME)' \
-			-d include_redis_plugin='$(INCLUDE_REDIS_PLUGIN)' \
-			-d include_postgresql_plugin='$(INCLUDE_POSTGRESQL_PLUGIN)' \
-			-d include_users_plugin='$(INCLUDE_USERS_PLUGIN)' \
+			-d include_redis_integration='$(INCLUDE_REDIS_INTEGRATION)' \
+			-d include_postgresql_integration='$(INCLUDE_POSTGRESQL_INTEGRATION)' \
+			-d include_users_feature='$(INCLUDE_USERS_FEATURE)' \
 			-d include_templating_component='$(INCLUDE_TEMPLATING_COMPONENT)' \
 			-d include_pre_commit='$(INCLUDE_PRE_COMMIT)' \
 			-d include_tests='$(INCLUDE_TESTS)' \
@@ -56,8 +56,8 @@ check-template: render
 		INCLUDE_HTTP_RUNTIME=false \
 		INCLUDE_TG_BOT_RUNTIME=false \
 		INCLUDE_STREAM_RUNTIME=false \
-		INCLUDE_REDIS_PLUGIN=false \
-		INCLUDE_POSTGRESQL_PLUGIN=true \
+		INCLUDE_REDIS_INTEGRATION=false \
+		INCLUDE_POSTGRESQL_INTEGRATION=true \
 		RENDER_DIR='examples/generated/cli-service'
 		$(MAKE) test-rendered \
 			PROJECT_NAME='Stateless Service' \
@@ -67,9 +67,9 @@ check-template: render
 			INCLUDE_HTTP_RUNTIME=true \
 			INCLUDE_TG_BOT_RUNTIME=false \
 			INCLUDE_STREAM_RUNTIME=false \
-			INCLUDE_REDIS_PLUGIN=false \
-			INCLUDE_POSTGRESQL_PLUGIN=false \
-			INCLUDE_USERS_PLUGIN=false \
+			INCLUDE_REDIS_INTEGRATION=false \
+			INCLUDE_POSTGRESQL_INTEGRATION=false \
+			INCLUDE_USERS_FEATURE=false \
 			RENDER_DIR='examples/generated/stateless-service'
 		$(MAKE) test-rendered \
 			PROJECT_NAME='Users Service' \
@@ -79,9 +79,9 @@ check-template: render
 			INCLUDE_HTTP_RUNTIME=true \
 			INCLUDE_TG_BOT_RUNTIME=false \
 			INCLUDE_STREAM_RUNTIME=false \
-			INCLUDE_REDIS_PLUGIN=false \
-			INCLUDE_POSTGRESQL_PLUGIN=true \
-			INCLUDE_USERS_PLUGIN=true \
+			INCLUDE_REDIS_INTEGRATION=false \
+			INCLUDE_POSTGRESQL_INTEGRATION=true \
+			INCLUDE_USERS_FEATURE=true \
 			RENDER_DIR='examples/generated/users-service'
 		$(MAKE) test-rendered \
 			PROJECT_NAME='Stream Service' \
@@ -91,9 +91,9 @@ check-template: render
 			INCLUDE_HTTP_RUNTIME=false \
 			INCLUDE_TG_BOT_RUNTIME=false \
 			INCLUDE_STREAM_RUNTIME=true \
-			INCLUDE_REDIS_PLUGIN=true \
-			INCLUDE_POSTGRESQL_PLUGIN=false \
-			INCLUDE_USERS_PLUGIN=false \
+			INCLUDE_REDIS_INTEGRATION=true \
+			INCLUDE_POSTGRESQL_INTEGRATION=false \
+			INCLUDE_USERS_FEATURE=false \
 			RENDER_DIR='examples/generated/stream-service'
 		$(MAKE) test-rendered \
 			PROJECT_NAME='Bot Service' \
@@ -103,9 +103,9 @@ check-template: render
 			INCLUDE_HTTP_RUNTIME=true \
 			INCLUDE_TG_BOT_RUNTIME=true \
 			INCLUDE_STREAM_RUNTIME=false \
-			INCLUDE_REDIS_PLUGIN=false \
-			INCLUDE_POSTGRESQL_PLUGIN=false \
-			INCLUDE_USERS_PLUGIN=false \
+			INCLUDE_REDIS_INTEGRATION=false \
+			INCLUDE_POSTGRESQL_INTEGRATION=false \
+			INCLUDE_USERS_FEATURE=false \
 			RENDER_DIR='examples/generated/bot-service'
 		$(MAKE) test-rendered \
 			PROJECT_NAME='Templating Service' \
@@ -115,9 +115,9 @@ check-template: render
 			INCLUDE_HTTP_RUNTIME=false \
 			INCLUDE_TG_BOT_RUNTIME=false \
 			INCLUDE_STREAM_RUNTIME=false \
-			INCLUDE_REDIS_PLUGIN=false \
-			INCLUDE_POSTGRESQL_PLUGIN=false \
-			INCLUDE_USERS_PLUGIN=false \
+			INCLUDE_REDIS_INTEGRATION=false \
+			INCLUDE_POSTGRESQL_INTEGRATION=false \
+			INCLUDE_USERS_FEATURE=false \
 			INCLUDE_TEMPLATING_COMPONENT=true \
 			RENDER_DIR='examples/generated/templating-service'
 
