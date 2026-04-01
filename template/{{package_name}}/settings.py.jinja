@@ -1,4 +1,4 @@
-{% if include_postgresql_plugin %}
+{% if include_postgresql_integration %}
 from sqlalchemy import URL
 {% endif %}
 
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     logging_mode: str = "plain"
     logging_lvl: str = "INFO"
     service_name: str = "{{ project_slug }}"
-{% if include_postgresql_plugin %}
+{% if include_postgresql_integration %}
     db_host: str = "localhost"
     db_port: int = 5432
     db_name: str = "app"
@@ -38,14 +38,14 @@ class Settings(BaseSettings):
     telegram_bot_token: str
     telegram_webhook_url: str
 {% endif %}
-{% if include_redis_plugin %}
+{% if include_redis_integration %}
     redis_url: str = "redis://localhost:6379/0"
 {% endif %}
-{% if include_stream_runtime and include_redis_plugin %}
+{% if include_stream_runtime and include_redis_integration %}
     stream_ping_stream: str = "{{ project_slug }}.ping"
 {% endif %}
 
-{% if include_postgresql_plugin %}
+{% if include_postgresql_integration %}
     @property
     def database_url(self) -> URL:
         return self._build_database_url(self.db_driver)
@@ -68,11 +68,11 @@ def get_settings() -> Settings:
     return Settings()
 
 
-{% if include_postgresql_plugin %}
+{% if include_postgresql_integration %}
 def get_database_settings() -> Settings:
     return get_settings()
 {% endif %}
-{% if include_redis_plugin %}
+{% if include_redis_integration %}
 
 
 def get_redis_settings() -> Settings:
