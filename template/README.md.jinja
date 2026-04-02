@@ -250,9 +250,18 @@ The shared user model lives in `{{ package_name }}/models/user.py`.
 {% if include_http_runtime %}
 The HTTP runtime also exposes:
 
+- `POST /auth/token`
+- `GET /users/me`
 - `GET /users`
 - `GET /users/{user_id}`
-- `POST /users`
+
+Authentication uses an OAuth2 password grant-compatible form endpoint that returns JWT bearer tokens.
+
+Configure:
+
+- `APP_JWT_SECRET_KEY`
+- `APP_JWT_ALGORITHM`
+- `APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES`
 {% endif %}
 {% endif %}
 
