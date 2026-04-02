@@ -1,0 +1,10 @@
+from uuid import uuid4
+from uuid import UUID
+
+from sqlalchemy import Uuid
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+
+
+class HasID:
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
