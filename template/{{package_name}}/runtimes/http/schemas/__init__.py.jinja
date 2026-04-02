@@ -1,7 +1,7 @@
 from .base import BaseSchema
 from .base import PageResponse
 
-{% if include_users_feature and include_postgresql_integration %}
+{% if include_users_feature and include_postgresql_integration -%}
 from .users import AccessTokenResponse
 from .users import UserResponse
 {% endif %}
@@ -9,8 +9,8 @@ from .users import UserResponse
 __all__ = [
     "BaseSchema",
     "PageResponse",
-{% if include_users_feature and include_postgresql_integration %}
+{% if include_users_feature and include_postgresql_integration -%}
     "AccessTokenResponse",
     "UserResponse",
-{% endif %}
+{% endif -%}
 ]
