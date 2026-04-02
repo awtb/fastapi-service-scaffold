@@ -4,50 +4,60 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
+from fastapi.security import OAuth2PasswordRequestForm
 
-from {{ package_name }}.features.users.contracts import CreateUserCommand
+from {{ package_name }}.features.users.contracts import AuthenticateUserCommand
+from {{ package_name }}.features.users.exceptions import AuthenticationError
 from {{ package_name }}.features.users.contracts import GetUserCommand
 from {{ package_name }}.features.users.contracts import ListUsersCommand
-from {{ package_name }}.features.users.use_cases import CreateUserUseCase
+from {{ package_name }}.features.users.use_cases import AuthenticateUserUseCase
 from {{ package_name }}.features.users.use_cases import GetUserUseCase
 from {{ package_name }}.features.users.use_cases import ListUsersUseCase
-from {{ package_name }}.runtimes.http.dependencies import get_create_user_use_case
+from {{ package_name }}.models.user import User
+from {{ package_name }}.runtimes.http.dependencies import get_authenticate_user_use_case
+from {{ package_name }}.runtimes.http.dependencies import get_current_user
 from {{ package_name }}.runtimes.http.dependencies import get_get_user_use_case
 from {{ package_name }}.runtimes.http.dependencies import get_list_users_use_case
 from {{ package_name }}.runtimes.http.dependencies import get_pagination_params
 from {{ package_name }}.runtimes.http.dependencies import PaginationParams
-from {{ package_name }}.runtimes.http.schemas import CreateUserPayload
+from {{ package_name }}.runtimes.http.schemas import AccessTokenResponse
 from {{ package_name }}.runtimes.http.schemas import PageResponse
 from {{ package_name }}.runtimes.http.schemas import UserResponse
-from {{ package_name }}.models.user import User
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter()
 
 
-@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(
-    payload: CreateUserPayload,
-    use_case: CreateUserUseCase = Depends(get_create_user_use_case),
-) -> UserResponse:
+@router.post("/auth/token", response_model=AccessTokenResponse, tags=["Auth"])
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case),
+) -> AccessTokenResponse:
     try:
-        user = await use_case.execute(
-            CreateUserCommand(
-                email=payload.email,
-                full_name=payload.full_name,
+        return await use_case.execute(
+            AuthenticateUserCommand(
+                email=form_data.username,
+                password=form_data.password,
             ),
         )
-    except ValueError as exc:
+    except AuthenticationError as exc:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),
+            headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    return user
+
+@router.get("/users/me", response_model=UserResponse, tags=["Users"])
+async def get_current_authenticated_user(
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    return current_user
 
 
-@router.get("", response_model=PageResponse[User])
+@router.get("/users", response_model=PageResponse[User], tags=["Users"])
 async def list_users(
     pagination: PaginationParams = Depends(get_pagination_params),
+    _current_user: User = Depends(get_current_user),
     use_case: ListUsersUseCase = Depends(get_list_users_use_case),
 ) -> PageResponse[User]:
     users_page = await use_case.execute(
@@ -60,9 +70,10 @@ async def list_users(
     return users_page
 
 
-@router.get("/{user_id}", response_model=UserResponse)
+@router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])
 async def get_user(
     user_id: UUID,
+    _current_user: User = Depends(get_current_user),
     use_case: GetUserUseCase = Depends(get_get_user_use_case),
 ) -> UserResponse:
     user = await use_case.execute(GetUserCommand(user_id=user_id))
