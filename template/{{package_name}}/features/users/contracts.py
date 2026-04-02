@@ -3,9 +3,16 @@ from uuid import UUID
 
 
 @dataclass(slots=True, kw_only=True)
-class CreateUserCommand:
+class AuthenticateUserCommand:
     email: str
-    full_name: str
+    password: str
+
+
+@dataclass(slots=True, kw_only=True)
+class AccessToken:
+    access_token: str
+    expires_in: int
+    token_type: str = "bearer"
 
 
 @dataclass(slots=True, kw_only=True)
