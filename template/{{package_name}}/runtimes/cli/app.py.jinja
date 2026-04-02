@@ -1,15 +1,18 @@
-{% if include_stream_runtime and include_redis_integration %}
+{%- set imports -%}
+{% if include_stream_runtime and include_redis_integration -%}
 import asyncio
-{% endif %}
+{% endif -%}
 import typer
-{% if include_http_runtime %}
+{% if include_http_runtime -%}
 import uvicorn
 
 from {{ package_name }}.settings import get_settings
-{% endif %}
-{% if include_stream_runtime and include_redis_integration %}
+{% endif -%}
+{% if include_stream_runtime and include_redis_integration -%}
 from {{ package_name }}.runtimes.stream.app import build_runtime_app
-{% endif %}
+{% endif -%}
+{%- endset -%}
+{{ imports | trim }}
 
 app = typer.Typer(
     help="Service runtime commands.",
@@ -20,9 +23,9 @@ app = typer.Typer(
 @app.callback()
 def cli() -> None:
     """Service runtime commands."""
-
-
 {% if include_http_runtime %}
+
+
 def _run_http_runtime(reload: bool) -> None:
     settings = get_settings()
     workers = 1 if reload else settings.workers_count
@@ -45,9 +48,9 @@ def run_http(
     ),
 ) -> None:
     _run_http_runtime(reload=reload)
-{% endif %}
+{% endif %}{% if include_stream_runtime and include_redis_integration %}
 
-{% if include_stream_runtime and include_redis_integration %}
+
 def _run_stream_runtime() -> None:
     asyncio.run(build_runtime_app().run())
 
