@@ -1,3 +1,54 @@
+{%- set dependencies -%}
+{% if include_postgresql_integration -%}
+"asyncpg>=0.31.0",
+"greenlet>=3.3.2",
+"psycopg2-binary>=2.9.11",
+{% endif -%}
+"pydantic-settings>=2.6,<3.0",
+{% if include_postgresql_integration -%}
+"sqlalchemy>=2.0.48",
+{% endif -%}
+"structlog>=25.0,<26.0",
+"typer>=0.16,<1.0",
+{% if include_templating_component -%}
+"jinja2>=3.1,<4.0",
+{% endif -%}
+{% if include_http_runtime -%}
+"fastapi>=0.115,<1.0",
+"prometheus-client>=0.22,<1.0",
+"uvicorn[standard]>=0.30,<1.0",
+{% if include_users_feature and include_postgresql_integration -%}
+"PyJWT>=2.10,<3.0",
+"python-multipart>=0.0.20,<1.0",
+{% endif -%}
+{% endif -%}
+{% if include_tg_bot_runtime and include_http_runtime -%}
+"aiogram>=3.24,<4.0",
+{% endif -%}
+{% if include_redis_integration and not include_stream_runtime -%}
+"redis>=7.2,<8.0",
+{% endif -%}
+{% if include_stream_runtime and include_redis_integration -%}
+"faststream[redis]>=0.6.7,<0.7",
+{% endif -%}
+{%- endset -%}
+{%- set dev_dependencies -%}
+{% if include_postgresql_integration -%}
+"alembic>=1.14,<2.0",
+{% endif -%}
+{% if include_pre_commit -%}
+"pre-commit>=4.0,<5.0",
+{% endif -%}
+{% if include_tests -%}
+"pytest>=8.0,<9.0",
+{% if include_http_runtime or (include_stream_runtime and include_redis_integration) -%}
+"httpx>=0.27,<1.0",
+{% endif -%}
+{% if include_postgresql_integration -%}
+"testcontainers[postgres]>=4.13,<5.0",
+{% endif -%}
+{% endif -%}
+{%- endset -%}
 [build-system]
 requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
@@ -9,60 +60,15 @@ description = "{{ project_description }}"
 readme = "README.md"
 requires-python = ">={{ python_version }}"
 dependencies = [
-{% if include_postgresql_integration %}
-  "asyncpg>=0.31.0",
-  "greenlet>=3.3.2",
-  "psycopg2-binary>=2.9.11",
-{% endif %}
-  "pydantic-settings>=2.6,<3.0",
-{% if include_postgresql_integration %}
-  "sqlalchemy>=2.0.48",
-{% endif %}
-  "structlog>=25.0,<26.0",
-  "typer>=0.16,<1.0",
-{% if include_templating_component %}
-  "jinja2>=3.1,<4.0",
-{% endif %}
-{% if include_http_runtime %}
-  "fastapi>=0.115,<1.0",
-  "prometheus-client>=0.22,<1.0",
-  "uvicorn[standard]>=0.30,<1.0",
-{% if include_users_feature and include_postgresql_integration %}
-  "PyJWT>=2.10,<3.0",
-  "python-multipart>=0.0.20,<1.0",
-{% endif %}
-{% endif %}
-{% if include_tg_bot_runtime and include_http_runtime %}
-  "aiogram>=3.24,<4.0",
-{% endif %}
-{% if include_redis_integration and not include_stream_runtime %}
-  "redis>=7.2,<8.0",
-{% endif %}
-{% if include_stream_runtime and include_redis_integration %}
-  "faststream[redis]>=0.6.7,<0.7",
-{% endif %}
+{{ dependencies | trim | indent(2, true) }}
 ]
 
 [project.optional-dependencies]
 dev = [
-{% if include_postgresql_integration %}
-  "alembic>=1.14,<2.0",
-{% endif %}
-{% if include_pre_commit %}
-  "pre-commit>=4.0,<5.0",
-{% endif %}
-{% if include_tests %}
-  "pytest>=8.0,<9.0",
-{% if include_http_runtime or (include_stream_runtime and include_redis_integration) %}
-  "httpx>=0.27,<1.0",
-{% endif %}
-{% if include_postgresql_integration %}
-  "testcontainers[postgres]>=4.13,<5.0",
-{% endif %}
-{% endif %}
+{{ dev_dependencies | trim | indent(2, true) }}
 ]
-
 {% if include_tests %}
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 {% endif %}
