@@ -18,7 +18,6 @@ _exclude:
   - "{% if not include_postgresql_integration %}tests/support/postgresql.py{% endif %}"
   - "{% if not include_postgresql_integration %}tests/integration/test_postgresql_integration.py{% endif %}"
   - "{% if not include_users_feature or not include_postgresql_integration %}{{ package_name }}/features/users{% endif %}"
-  - "{% if not include_users_feature or not include_postgresql_integration %}{{ package_name }}/models/user.py{% endif %}"
   - "{% if not include_users_feature or not include_postgresql_integration %}{{ package_name }}/infra/db/models/user.py{% endif %}"
   - "{% if not include_users_feature or not include_postgresql_integration or not include_http_runtime %}{{ package_name }}/runtimes/http/dependencies/users.py{% endif %}"
   - "{% if not include_users_feature or not include_postgresql_integration or not include_http_runtime %}{{ package_name }}/runtimes/http/schemas/users.py{% endif %}"
