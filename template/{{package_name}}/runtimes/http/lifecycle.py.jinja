@@ -1,19 +1,21 @@
+{%- set imports -%}
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 import structlog
-{% if include_tg_bot_runtime and include_http_runtime %}
+{% if include_tg_bot_runtime and include_http_runtime -%}
 from aiogram import Bot
 
 from {{ package_name }}.runtimes.tg_bot.commands import build_commands
-{% endif %}
-
-{% if include_postgresql_integration %}
+{% endif -%}
+{% if include_postgresql_integration -%}
 from {{ package_name }}.infra.db import create_db_engine
 from {{ package_name }}.infra.db import create_session_factory
-{% endif %}
+{% endif -%}
 from {{ package_name }}.settings import Settings
 from {{ package_name }}.settings import get_settings
+{%- endset -%}
+{{ imports | trim }}
 
 logger = structlog.get_logger(__name__)
 
@@ -22,9 +24,9 @@ def load_runtime_settings(app: FastAPI) -> Settings:
     settings = getattr(app.state, "settings", get_settings())
     app.state.settings = settings
     return settings
-
-
 {% if include_postgresql_integration %}
+
+
 def setup_db_runtime(app: FastAPI) -> None:
     settings = load_runtime_settings(app)
     app.state.db_engine = create_db_engine(settings)
@@ -33,8 +35,7 @@ def setup_db_runtime(app: FastAPI) -> None:
 
 async def teardown_db_runtime(app: FastAPI) -> None:
     await app.state.db_engine.dispose()
-{% endif %}
-{% if include_tg_bot_runtime and include_http_runtime %}
+{% endif %}{% if include_tg_bot_runtime and include_http_runtime %}
 
 
 async def configure_tg_bot(
@@ -71,8 +72,7 @@ async def lifespan(app: FastAPI):
     load_runtime_settings(app)
 {% if include_postgresql_integration %}
     setup_db_runtime(app)
-{% endif %}
-{% if include_tg_bot_runtime and include_http_runtime %}
+{% endif %}{% if include_tg_bot_runtime and include_http_runtime %}
     await setup_tg_bot_runtime(app)
 {% endif %}
     logger.info("Application startup")
@@ -81,8 +81,7 @@ async def lifespan(app: FastAPI):
     finally:
 {% if include_postgresql_integration %}
         await teardown_db_runtime(app)
-{% endif %}
-{% if include_tg_bot_runtime and include_http_runtime %}
+{% endif %}{% if include_tg_bot_runtime and include_http_runtime %}
         await teardown_tg_bot_runtime(app)
 {% endif %}
         logger.info("Application shutdown")
