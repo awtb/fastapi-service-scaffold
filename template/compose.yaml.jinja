@@ -1,61 +1,63 @@
-{% set has_stream_runtime = include_stream_runtime and include_redis_integration %}
-{% set primary_runtime = "http" if include_http_runtime else "stream" if has_stream_runtime else none %}
+{%- set has_stream_runtime = include_stream_runtime and include_redis_integration -%}
+{%- set primary_runtime = "http" if include_http_runtime else "stream" if has_stream_runtime else none -%}
 services:
   app:
     build:
       context: .
     command: ["python", "-m", "{{ package_name }}"{% if primary_runtime %}, "{{ primary_runtime }}"{% endif %}]
-{% if include_postgresql_integration or include_redis_integration %}
+{%- if include_postgresql_integration or include_redis_integration %}
     depends_on:
-{% if include_postgresql_integration %}
+{%- if include_postgresql_integration %}
       - db
-{% endif %}
-{% if include_redis_integration %}
+{%- endif %}
+{%- if include_redis_integration %}
       - redis
-{% endif %}
+{%- endif %}
     environment:
-{% if include_postgresql_integration %}
+{%- if include_postgresql_integration %}
       APP_DB_HOST: db
       APP_DB_PORT: "5432"
       APP_DB_NAME: app
       APP_DB_USER: app
       APP_DB_PASSWORD: app
-{% endif %}
-{% if include_redis_integration %}
+{%- endif %}
+{%- if include_redis_integration %}
       APP_REDIS_URL: redis://redis:6379/0
-{% endif %}
-{% endif %}
-{% if include_http_runtime %}
+{%- endif %}
+{%- endif %}
+{%- if include_http_runtime %}
     ports:
       - "8000:8000"
-{% endif %}
-{% if has_stream_runtime and primary_runtime != "stream" %}
+{%- endif %}
+{%- if has_stream_runtime and primary_runtime != "stream" %}
+
   stream:
     build:
       context: .
     command: ["python", "-m", "{{ package_name }}", "stream"]
-{% if include_postgresql_integration or include_redis_integration %}
+{%- if include_postgresql_integration or include_redis_integration %}
     depends_on:
-{% if include_postgresql_integration %}
+{%- if include_postgresql_integration %}
       - db
-{% endif %}
-{% if include_redis_integration %}
+{%- endif %}
+{%- if include_redis_integration %}
       - redis
-{% endif %}
+{%- endif %}
     environment:
-{% if include_postgresql_integration %}
+{%- if include_postgresql_integration %}
       APP_DB_HOST: db
       APP_DB_PORT: "5432"
       APP_DB_NAME: app
       APP_DB_USER: app
       APP_DB_PASSWORD: app
-{% endif %}
-{% if include_redis_integration %}
+{%- endif %}
+{%- if include_redis_integration %}
       APP_REDIS_URL: redis://redis:6379/0
-{% endif %}
-{% endif %}
-{% endif %}
-{% if include_postgresql_integration %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if include_postgresql_integration %}
+
   db:
     image: postgres:17-alpine
     environment:
@@ -66,13 +68,16 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+{%- endif %}
+{%- if include_redis_integration %}
 
-volumes:
-  postgres_data:
-{% endif %}
-{% if include_redis_integration %}
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-{% endif %}
+{%- endif %}
+{%- if include_postgresql_integration %}
+
+volumes:
+  postgres_data:
+{%- endif %}
