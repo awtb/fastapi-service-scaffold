@@ -1,0 +1,42 @@
+from {{ package_name }}.features.users.contracts import AccessToken
+from {{ package_name }}.features.users.contracts import AuthenticateUserCommand
+from {{ package_name }}.features.users.exceptions import AuthenticationError
+from {{ package_name }}.features.users.ports import AccessTokenService
+from {{ package_name }}.features.users.ports import PasswordService
+from {{ package_name }}.features.users.ports import UsersRepositoryFactory
+from {{ package_name }}.protocols import UnitOfWork
+
+
+class AuthenticateUserUseCase:
+    def __init__(
+        self,
+        repository_factory: UsersRepositoryFactory,
+        access_token_service: AccessTokenService,
+        password_service: PasswordService,
+        uow: UnitOfWork,
+    ) -> None:
+        self._repository_factory = repository_factory
+        self._access_token_service = access_token_service
+        self._password_service = password_service
+        self._uow = uow
+
+    def _normalize_email(self, email: str) -> str:
+        return email.strip().lower()
+
+    async def execute(self, command: AuthenticateUserCommand) -> AccessToken:
+        async with self._uow as uow:
+            repository = self._repository_factory(uow)
+            user_credentials = await repository.get_credentials_by_email(
+                self._normalize_email(command.email),
+            )
+
+            if user_credentials is None or not user_credentials.user.is_active:
+                raise AuthenticationError("Incorrect username or password.")
+
+            if not self._password_service.verify(
+                command.password,
+                user_credentials.password_hash,
+            ):
+                raise AuthenticationError("Incorrect username or password.")
+
+            return self._access_token_service.issue(user_credentials.user)
