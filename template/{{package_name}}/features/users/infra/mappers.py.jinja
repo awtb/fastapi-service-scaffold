@@ -1,6 +1,6 @@
 from {{ package_name }}.infra.db.models.user import UserRecord
-from {{ package_name }}.models.user import User
-from {{ package_name }}.models.user import UserCredentials
+from {{ package_name }}.features.users.models import User
+from {{ package_name }}.features.users.models import UserCredentials
 
 
 def to_user_model(record: UserRecord) -> User:
