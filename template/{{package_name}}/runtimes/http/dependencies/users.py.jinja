@@ -5,12 +5,12 @@ from fastapi.security import OAuth2PasswordBearer
 
 from {{ package_name }}.features.users.infra import JwtAccessTokenService
 from {{ package_name }}.features.users.infra import Pbkdf2PasswordService
+from {{ package_name }}.features.users.models import User
 from {{ package_name }}.features.users.infra import build_users_repository
 from {{ package_name }}.features.users.use_cases import AuthenticateUserUseCase
 from {{ package_name }}.features.users.use_cases import GetUserUseCase
 from {{ package_name }}.features.users.use_cases import ListUsersUseCase
 from {{ package_name }}.infra.db import SqlAlchemyUnitOfWork
-from {{ package_name }}.models.user import User
 from {{ package_name }}.settings import Settings
 from {{ package_name }}.settings import get_settings
 
