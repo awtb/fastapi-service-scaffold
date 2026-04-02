@@ -12,3 +12,9 @@ class User(BaseModel):
     full_name: str
     is_active: bool
     created_at: datetime
+
+
+@dataclass(slots=True, kw_only=True)
+class UserCredentials(BaseModel):
+    user: User
+    password_hash: str
