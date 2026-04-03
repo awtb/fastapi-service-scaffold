@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import noload
 
 from {{ package_name }}.dto import PageDTO
+from {{ package_name }}.exceptions import ValidationError
 from {{ package_name }}.protocols import UnitOfWork
 
 DTOT = TypeVar("DTOT")
@@ -41,10 +42,10 @@ class BaseRepository(Generic[DTOT]):
         mapper_fn: Callable[[Any], DTOT],
     ) -> PageDTO[DTOT]:
         if page < 1:
-            raise ValueError("page must be greater than 0.")
+            raise ValidationError("page must be greater than 0.")
 
         if page_size < 1:
-            raise ValueError("page_size must be greater than 0.")
+            raise ValidationError("page_size must be greater than 0.")
 
         total = await self._session.scalar(
             query.order_by(None)
