@@ -1,9 +1,9 @@
-from {{ package_name }}.features.users.contracts import AccessToken
-from {{ package_name }}.features.users.contracts import AuthenticateUserCommand
+from {{ package_name }}.features.users.dto import AuthenticateUserCommand
+from {{ package_name }}.features.users.dto import AuthenticateUserResult
 from {{ package_name }}.features.users.exceptions import AuthenticationError
-from {{ package_name }}.features.users.ports import AccessTokenService
-from {{ package_name }}.features.users.ports import PasswordService
-from {{ package_name }}.features.users.ports import UsersRepositoryFactory
+from {{ package_name }}.features.users.protocols import AccessTokenService
+from {{ package_name }}.features.users.protocols import PasswordService
+from {{ package_name }}.features.users.protocols import UsersRepositoryFactory
 from {{ package_name }}.protocols import UnitOfWork
 
 
@@ -23,7 +23,7 @@ class AuthenticateUserUseCase:
     def _normalize_email(self, email: str) -> str:
         return email.strip().lower()
 
-    async def execute(self, command: AuthenticateUserCommand) -> AccessToken:
+    async def execute(self, command: AuthenticateUserCommand) -> AuthenticateUserResult:
         async with self._uow as uow:
             repository = self._repository_factory(uow)
             user_credentials = await repository.get_credentials_by_email(
@@ -39,4 +39,9 @@ class AuthenticateUserUseCase:
             ):
                 raise AuthenticationError("Incorrect username or password.")
 
-            return self._access_token_service.issue(user_credentials.user)
+            return AuthenticateUserResult(
+                access_token=self._access_token_service.issue_for_subject(
+                    user_credentials.user.id,
+                ),
+                expires_in=self._access_token_service.expires_in_seconds,
+            )
