@@ -75,7 +75,11 @@ def test_users_routes_require_login_and_return_records(
 
     me_response = client.get("/users/me", headers=headers)
     assert me_response.status_code == 200
-    assert me_response.json()["email"] == "user@example.com"
+    assert me_response.json() == {
+        "id": user_id,
+        "email": "user@example.com",
+        "full_name": "Test User",
+    }
 
     list_response = client.get("/users", params={"page": 1, "page_size": 10}, headers=headers)
 
