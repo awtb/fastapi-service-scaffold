@@ -1,0 +1,34 @@
+from collections.abc import Callable
+from typing import Protocol
+from uuid import UUID
+
+from {{ package_name }}.dto import PageDTO
+from {{ package_name }}.features.users.dto import UserCredentialsDTO
+from {{ package_name }}.features.users.dto import UserDTO
+from {{ package_name }}.protocols import UnitOfWork
+
+
+class UsersRepository(Protocol):
+    async def get_credentials_by_email(self, email: str) -> UserCredentialsDTO | None: ...
+
+    async def get_by_id(self, user_id: UUID) -> UserDTO | None: ...
+
+    async def list(self, page: int, page_size: int) -> PageDTO[UserDTO]: ...
+
+
+class AccessTokenService(Protocol):
+    @property
+    def expires_in_seconds(self) -> int: ...
+
+    def issue_for_subject(self, subject: UUID) -> str: ...
+
+    def get_subject(self, token: str) -> UUID: ...
+
+
+class PasswordService(Protocol):
+    def hash(self, password: str) -> str: ...
+
+    def verify(self, password: str, password_hash: str) -> bool: ...
+
+
+UsersRepositoryFactory = Callable[[UnitOfWork], UsersRepository]
