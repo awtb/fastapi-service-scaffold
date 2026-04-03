@@ -7,7 +7,12 @@ uv run python -m {{ package_name }} stream
 uv run python -m {{ package_name }}
 {% endif -%}
 {%- endset -%}
-.PHONY: install run{% if include_tests %} test{% endif %}{% if include_pre_commit %} hooks pre-commit{% endif %}
+{% if include_postgresql_integration -%}
+ALEMBIC := uv run alembic
+REVISION ?= -1
+MESSAGE ?=
+{% endif -%}
+.PHONY: install run{% if include_tests %} test{% endif %}{% if include_pre_commit %} hooks pre-commit{% endif %}{% if include_postgresql_integration %} migrate downgrade revision revision-autogenerate current history{% endif %}
 
 install:
 	uv sync --extra dev
@@ -25,4 +30,25 @@ hooks: install
 
 pre-commit: install
 	uv run pre-commit run --all-files
+{% endif %}{% if include_postgresql_integration %}
+
+migrate:
+	$(ALEMBIC) upgrade head
+
+downgrade:
+	$(ALEMBIC) downgrade $(REVISION)
+
+revision:
+	@test -n "$(MESSAGE)" || (echo 'Usage: make revision MESSAGE="add_users_table"' && exit 1)
+	$(ALEMBIC) revision -m "$(MESSAGE)"
+
+revision-autogenerate:
+	@test -n "$(MESSAGE)" || (echo 'Usage: make revision-autogenerate MESSAGE="add_users_table"' && exit 1)
+	$(ALEMBIC) revision --autogenerate -m "$(MESSAGE)"
+
+current:
+	$(ALEMBIC) current
+
+history:
+	$(ALEMBIC) history
 {% endif %}
