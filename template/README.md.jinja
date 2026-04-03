@@ -170,7 +170,9 @@ PostgreSQL variants also configure a disposable testcontainer-backed database fi
 
 The ready-to-use users feature lives in `{{ package_name }}/features/users/`.
 
-The feature models live in `{{ package_name }}/features/users/models.py`.
+Use-case DTOs live in `{{ package_name }}/features/users/dto.py`.
+Feature-local interfaces live in `{{ package_name }}/features/users/protocols.py`.
+Database record models stay in `{{ package_name }}/infra/db/models/`.
 
 {% if include_http_runtime -%}
 The HTTP runtime also exposes:
@@ -270,15 +272,30 @@ Read and edit these areas first:
 - `{{ package_name }}/runtimes/` for transport-specific wiring and entrypoints
 - `{{ package_name }}/features/` for business use cases and feature logic
 - `{{ package_name }}/infra/` for technical adapters such as logging, database, Redis, or templating
-- `{{ package_name }}/protocols/` for contracts between business logic and infrastructure
-- `{{ package_name }}/models/` for shared business models
+- `{{ package_name }}/dto/` for shared DTOs such as pagination
+- `{{ package_name }}/protocols/` for interfaces shared across layers
 
 As a rule:
 
 - put runtime code in `runtimes/`
 - put business logic in `features/`
 - put adapters and infrastructure wiring in `infra/`
+- put shared data shapes in `dto/`
 - keep runtime-specific code out of business features when a protocol is enough
+
+Within a feature package, prefer:
+
+- `dto.py` for use-case input/output data that crosses feature boundaries
+- `protocols.py` for feature-local interfaces
+
+Keep the boundary strict:
+
+- DTOs describe use-case inputs and outputs
+- protocols describe collaborator behavior required by the use case
+- use cases translate between DTOs and protocols
+
+This scaffold does not generate a separate business `models` layer by default.
+Persistence models stay under `infra/db/models/`, transport schemas stay inside runtimes, and application data shapes live in DTOs.
 
 ## Project Map
 
@@ -287,8 +304,8 @@ The generated project is intentionally small:
 - `{{ package_name }}/runtimes/` contains runnable entrypoints and transport wiring
 - `{{ package_name }}/features/` contains business capabilities
 - `{{ package_name }}/infra/` contains infrastructure adapters
+- `{{ package_name }}/dto/` contains shared DTOs
 - `{{ package_name }}/protocols/` contains interfaces used across layers
-- `{{ package_name }}/models/` contains shared business models
 {% if project_map_tests | trim %}
 {{ project_map_tests | trim }}
 {% endif %}
