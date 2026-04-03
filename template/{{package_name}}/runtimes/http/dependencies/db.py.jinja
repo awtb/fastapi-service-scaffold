@@ -1,7 +1,8 @@
 from fastapi import Request
 
 from {{ package_name }}.infra.db import SqlAlchemyUnitOfWork
+from {{ package_name }}.protocols import UnitOfWork
 
 
-def get_sqlalchemy_uow(request: Request) -> SqlAlchemyUnitOfWork:
+def get_sqlalchemy_uow(request: Request) -> UnitOfWork:
     return SqlAlchemyUnitOfWork(request.app.state.db_session_factory)
