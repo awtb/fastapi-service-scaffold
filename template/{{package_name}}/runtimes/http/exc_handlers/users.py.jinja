@@ -1,0 +1,25 @@
+{% if include_users_feature %}
+from fastapi import HTTPException
+from fastapi import Request
+from fastapi import status
+from fastapi.exception_handlers import http_exception_handler
+from starlette.responses import Response
+
+from {{ package_name }}.features.users.exceptions import AuthenticationError
+from {{ package_name }}.runtimes.http.exc_handlers.common import attach_request_id_header
+
+
+async def handle_authentication_error(
+    request: Request,
+    exc: AuthenticationError,
+) -> Response:
+    response = await http_exception_handler(
+        request,
+        HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc),
+            headers={"WWW-Authenticate": "Bearer"},
+        ),
+    )
+    return attach_request_id_header(request, response)
+{% endif %}
