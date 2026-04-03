@@ -6,11 +6,11 @@ from fastapi import HTTPException
 from fastapi import status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from {{ package_name }}.features.users.contracts import AuthenticateUserCommand
+from {{ package_name }}.features.users.dto import AuthenticateUserCommand
+from {{ package_name }}.features.users.dto import GetUserQuery
+from {{ package_name }}.features.users.dto import ListUsersQuery
+from {{ package_name }}.features.users.dto import UserDTO
 from {{ package_name }}.features.users.exceptions import AuthenticationError
-from {{ package_name }}.features.users.contracts import GetUserCommand
-from {{ package_name }}.features.users.contracts import ListUsersCommand
-from {{ package_name }}.features.users.models import User
 from {{ package_name }}.features.users.use_cases import AuthenticateUserUseCase
 from {{ package_name }}.features.users.use_cases import GetUserUseCase
 from {{ package_name }}.features.users.use_cases import ListUsersUseCase
@@ -49,19 +49,19 @@ async def login_for_access_token(
 
 @router.get("/users/me", response_model=UserResponse, tags=["Users"])
 async def get_current_authenticated_user(
-    current_user: User = Depends(get_current_user),
+    current_user: UserDTO = Depends(get_current_user),
 ) -> UserResponse:
     return current_user
 
 
-@router.get("/users", response_model=PageResponse[User], tags=["Users"])
+@router.get("/users", response_model=PageResponse[UserResponse], tags=["Users"])
 async def list_users(
     pagination: PaginationParams = Depends(get_pagination_params),
-    _current_user: User = Depends(get_current_user),
+    _current_user: UserDTO = Depends(get_current_user),
     use_case: ListUsersUseCase = Depends(get_list_users_use_case),
-) -> PageResponse[User]:
+) -> PageResponse[UserResponse]:
     users_page = await use_case.execute(
-        ListUsersCommand(
+        ListUsersQuery(
             page=pagination.page,
             page_size=pagination.page_size,
         )
@@ -73,10 +73,10 @@ async def list_users(
 @router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])
 async def get_user(
     user_id: UUID,
-    _current_user: User = Depends(get_current_user),
+    _current_user: UserDTO = Depends(get_current_user),
     use_case: GetUserUseCase = Depends(get_get_user_use_case),
 ) -> UserResponse:
-    user = await use_case.execute(GetUserCommand(user_id=user_id))
+    user = await use_case.execute(GetUserQuery(user_id=user_id))
 
     if user is None:
         raise HTTPException(
