@@ -1,5 +1,6 @@
 from {{ package_name }}.features.users.dto import AuthenticateUserCommand
 from {{ package_name }}.features.users.dto import AuthenticateUserResult
+from {{ package_name }}.features.users.dto import CurrentUserDTO
 from {{ package_name }}.features.users.exceptions import AuthenticationError
 from {{ package_name }}.features.users.protocols import AccessTokenService
 from {{ package_name }}.features.users.protocols import PasswordService
@@ -39,9 +40,12 @@ class AuthenticateUserUseCase:
             ):
                 raise AuthenticationError("Incorrect username or password.")
 
+            current_user = CurrentUserDTO(
+                id=user_credentials.user.id,
+                email=user_credentials.user.email,
+                full_name=user_credentials.user.full_name,
+            )
             return AuthenticateUserResult(
-                access_token=self._access_token_service.issue_for_subject(
-                    user_credentials.user.id,
-                ),
+                access_token=self._access_token_service.issue_for_user(current_user),
                 expires_in=self._access_token_service.expires_in_seconds,
             )
