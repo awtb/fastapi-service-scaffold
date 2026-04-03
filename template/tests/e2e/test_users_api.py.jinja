@@ -4,8 +4,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from {{ package_name }}.features.users.exceptions import AuthenticationError
 from {{ package_name }}.features.users.infra import Pbkdf2PasswordService
 from {{ package_name }}.infra.db.models.user import UserRecord
+from {{ package_name }}.runtimes.http.app import build_app
 
 
 async def _seed_user(database_url: str) -> str:
@@ -39,6 +41,12 @@ def test_users_routes_are_exposed(client: TestClient) -> None:
     assert "/users" in paths
     assert "/users/{user_id}" in paths
     assert "post" not in paths["/users"]
+
+
+def test_authentication_error_handler_is_registered(app_env: None) -> None:
+    app = build_app()
+
+    assert AuthenticationError in app.exception_handlers
 
 
 def test_users_routes_require_login_and_return_records(
@@ -92,6 +100,7 @@ def test_users_routes_require_login_and_return_records(
     )
 
     assert invalid_password_response.status_code == 401
+    assert "X-Request-ID" in invalid_password_response.headers
     assert (
         invalid_password_response.json()["detail"]
         == "Incorrect username or password."
