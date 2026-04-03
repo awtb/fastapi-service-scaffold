@@ -68,7 +68,7 @@ Run it through the CLI:
 uv run python -m {{ package_name }} http --reload
 ```
 
-Use `APP_WORKERS_COUNT` to control uvicorn worker count in non-reload mode.
+Use `WORKERS_COUNT` to control uvicorn worker count in non-reload mode.
 {% endif -%}
 {% if include_tg_bot_runtime and include_http_runtime -%}
 ### Telegram Bot Component
@@ -79,8 +79,8 @@ Webhook updates are accepted by the HTTP runtime at `POST /telegram`.
 
 Configure:
 
-- `APP_TELEGRAM_BOT_TOKEN`
-- `APP_TELEGRAM_WEBHOOK_URL`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_WEBHOOK_URL`
 
 The starter bot includes `/start`, `/ping`, and a small inline callback flow.
 {% endif -%}
@@ -105,8 +105,8 @@ uv run uvicorn {{ package_name }}.runtimes.stream.app:build_asgi_app --factory
 
 Configure:
 
-- `APP_REDIS_URL`
-- `APP_STREAM_PING_STREAM`
+- `REDIS_URL`
+- `STREAM_PING_STREAM`
 {% endif -%}
 {% if include_templating_component -%}
 ### Templating Component
@@ -130,7 +130,7 @@ Redis-facing protocols live in `{{ package_name }}/protocols/redis/`.
 
 Configure:
 
-- `APP_REDIS_URL`
+- `REDIS_URL`
 {% endif -%}
 {% if include_postgresql_integration -%}
 ### PostgreSQL Integration
@@ -141,13 +141,13 @@ Alembic migrations live in `alembic/`.
 
 Configure:
 
-- `APP_DB_HOST`
-- `APP_DB_PORT`
-- `APP_DB_NAME`
-- `APP_DB_USER`
-- `APP_DB_PASSWORD`
-- `APP_DB_DRIVER`
-- `APP_DB_DRIVER_SYNC`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_DRIVER`
+- `DB_DRIVER_SYNC`
 
 Runtime access uses SQLAlchemy `AsyncSession`.
 
@@ -195,9 +195,9 @@ Authentication uses an OAuth2 password grant-compatible form endpoint that retur
 
 Configure:
 
-- `APP_JWT_SECRET_KEY`
-- `APP_JWT_ALGORITHM`
-- `APP_JWT_ACCESS_TOKEN_EXPIRE_MINUTES`
+- `JWT_SECRET_KEY`
+- `JWT_ALGORITHM`
+- `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`
 {% endif -%}
 {% endif -%}
 {%- endset -%}
