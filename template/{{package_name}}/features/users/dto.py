@@ -17,6 +17,13 @@ class AuthenticateUserResult:
 
 
 @dataclass(slots=True, kw_only=True)
+class CurrentUserDTO:
+    id: UUID
+    email: str
+    full_name: str
+
+
+@dataclass(slots=True, kw_only=True)
 class UserDTO:
     id: UUID
     email: str
