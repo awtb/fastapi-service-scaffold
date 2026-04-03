@@ -6,7 +6,9 @@ from fastapi import HTTPException
 from fastapi import status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from {{ package_name }}.dto import PageDTO
 from {{ package_name }}.features.users.dto import AuthenticateUserCommand
+from {{ package_name }}.features.users.dto import AuthenticateUserResult
 from {{ package_name }}.features.users.dto import GetUserQuery
 from {{ package_name }}.features.users.dto import ListUsersQuery
 from {{ package_name }}.features.users.dto import UserDTO
@@ -31,7 +33,7 @@ router = APIRouter()
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case),
-) -> AccessTokenResponse:
+) -> AuthenticateUserResult:
     try:
         return await use_case.execute(
             AuthenticateUserCommand(
@@ -50,7 +52,7 @@ async def login_for_access_token(
 @router.get("/users/me", response_model=UserResponse, tags=["Users"])
 async def get_current_authenticated_user(
     current_user: UserDTO = Depends(get_current_user),
-) -> UserResponse:
+) -> UserDTO:
     return current_user
 
 
@@ -59,7 +61,7 @@ async def list_users(
     pagination: PaginationParams = Depends(get_pagination_params),
     _current_user: UserDTO = Depends(get_current_user),
     use_case: ListUsersUseCase = Depends(get_list_users_use_case),
-) -> PageResponse[UserResponse]:
+) -> PageDTO[UserDTO]:
     users_page = await use_case.execute(
         ListUsersQuery(
             page=pagination.page,
@@ -75,7 +77,7 @@ async def get_user(
     user_id: UUID,
     _current_user: UserDTO = Depends(get_current_user),
     use_case: GetUserUseCase = Depends(get_get_user_use_case),
-) -> UserResponse:
+) -> UserDTO:
     user = await use_case.execute(GetUserQuery(user_id=user_id))
 
     if user is None:
