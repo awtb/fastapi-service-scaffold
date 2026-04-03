@@ -1,0 +1,10 @@
+from {{ package_name }}.features.users.dto import CurrentUserDTO
+from {{ package_name }}.features.users.protocols import AccessTokenService
+
+
+class GetCurrentUserUseCase:
+    def __init__(self, access_token_service: AccessTokenService) -> None:
+        self._access_token_service = access_token_service
+
+    async def execute(self, token: str) -> CurrentUserDTO:
+        return self._access_token_service.get_current_user(token)
