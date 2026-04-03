@@ -12,7 +12,6 @@ from {{ package_name }}.features.users.dto import AuthenticateUserResult
 from {{ package_name }}.features.users.dto import GetUserQuery
 from {{ package_name }}.features.users.dto import ListUsersQuery
 from {{ package_name }}.features.users.dto import UserDTO
-from {{ package_name }}.features.users.exceptions import AuthenticationError
 from {{ package_name }}.features.users.use_cases import AuthenticateUserUseCase
 from {{ package_name }}.features.users.use_cases import GetUserUseCase
 from {{ package_name }}.features.users.use_cases import ListUsersUseCase
@@ -34,19 +33,12 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case),
 ) -> AuthenticateUserResult:
-    try:
-        return await use_case.execute(
-            AuthenticateUserCommand(
-                email=form_data.username,
-                password=form_data.password,
-            ),
-        )
-    except AuthenticationError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(exc),
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from exc
+    return await use_case.execute(
+        AuthenticateUserCommand(
+            email=form_data.username,
+            password=form_data.password,
+        ),
+    )
 
 
 @router.get("/users/me", response_model=UserResponse, tags=["Users"])
