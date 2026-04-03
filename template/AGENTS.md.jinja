@@ -9,7 +9,7 @@ The codebase is organized around explicit building blocks:
 - `runtimes` for ways to run the service
 - `features` for business capabilities
 - `infra` for technical adapters and shared infrastructure
-- `models` for shared business models
+- `dto` for shared data-transfer objects
 - `protocols` for cross-layer interfaces
 
 Keep the structure small and predictable. Prefer placing code into an existing package over creating new top-level directories.
@@ -19,8 +19,8 @@ Keep the structure small and predictable. Prefer placing code into an existing p
 When adding or changing code, use these rules first:
 
 - Put runtime entrypoints, request/response wiring, and transport-specific adapters in `{{ package_name }}/runtimes/`.
-- Put business use cases and feature-specific contracts in `{{ package_name }}/features/`.
-- Put shared domain models used by multiple features or runtimes in `{{ package_name }}/models/`.
+- Put business use cases, feature DTOs, and feature-local interfaces in `{{ package_name }}/features/`.
+- Put shared DTOs used by multiple features or runtimes in `{{ package_name }}/dto/`.
 - Put infrastructure adapters and technical wiring in `{{ package_name }}/infra/`.
 - Put interfaces between business code and infrastructure in `{{ package_name }}/protocols/`.
 - Put tests in `tests/unit/`, `tests/integration/`, or `tests/e2e/` based on scope.
@@ -34,8 +34,11 @@ When adding or changing code, use these rules first:
 - New Telegram bot routers, callbacks, keyboards, FSM states, and dispatcher wiring: `{{ package_name }}/runtimes/tg_bot/`
 - New FastStream brokers, subscribers, publishers, and stream runtime wiring: `{{ package_name }}/runtimes/stream/`
 - Feature business flows: `{{ package_name }}/features/<feature_name>/use_cases/`
-- Feature-specific ports or contracts: `{{ package_name }}/features/<feature_name>/`
-- If a feature accumulates too many contracts, split `contracts.py` into `{{ package_name }}/features/<feature_name>/contracts/` instead of keeping one large module.
+- Feature-specific DTOs or interfaces: `{{ package_name }}/features/<feature_name>/`
+- Prefer `dto.py` for feature request/response data and `protocols.py` for feature-local interfaces.
+- Put reusable DTOs such as pagination containers in `{{ package_name }}/dto/`.
+- The scaffold does not generate a separate business `models.py` layer by default.
+- If a feature accumulates too many DTOs or interfaces, split them into `dto/` or `protocols/` packages instead of keeping one large module.
 - Feature-specific infrastructure that should stay close to the feature: `{{ package_name }}/features/<feature_name>/infra/`
 - Shared settings and config models: `{{ package_name }}/settings.py`
 - Shared logging setup: `{{ package_name }}/infra/logging/`
@@ -50,15 +53,16 @@ When adding or changing code, use these rules first:
 
 - Do not put business logic into runtime modules when it can live in a feature use case.
 - Do not put HTTP-specific or CLI-specific code into `features/`.
-- Do not make `features/` depend directly on FastAPI, FastStream, Click, SQLAlchemy sessions, or other runtime details when a port or protocol is enough.
+- Do not make `features/` depend directly on FastAPI, FastStream, Click, SQLAlchemy sessions, or other runtime details when a protocol is enough.
+- Do not return HTTP schemas or ORM records from protocols; use DTOs for feature data and keep runtime or persistence types at the edges.
 - Do not add hidden framework layers or generic base abstractions unless the codebase already needs them in multiple places.
-- Do not create a new top-level package for a concern that fits under `runtimes`, `features`, `infra`, `models`, or `protocols`.
+- Do not create a new top-level package for a concern that fits under `runtimes`, `features`, `infra`, `dto`, or `protocols`.
 
 ## Examples
 
-- Complex feature example: an `orders` feature can live under `{{ package_name }}/features/orders/` with `use_cases/create_order.py`, `use_cases/cancel_order.py`, `use_cases/get_order.py`, feature contracts or ports in the package root, and persistence adapters in `{{ package_name }}/features/orders/infra/`.
-- Workflow-heavy feature example: a `billing` or `subscriptions` feature should keep orchestration and business rules in `{{ package_name }}/features/<feature_name>/use_cases/`, expose only feature-level contracts to runtimes, and keep payment-provider or storage adapters outside the runtime layer.
-- Shared model example: if `orders`, `billing`, and HTTP pagination all need the same business entity or page result, place the shared type in `{{ package_name }}/models/` instead of redefining it inside each feature or runtime schema package.
+- Complex feature example: an `orders` feature can live under `{{ package_name }}/features/orders/` with `use_cases/create_order.py`, `use_cases/cancel_order.py`, `use_cases/get_order.py`, feature DTOs or protocols in the package root, and persistence adapters in `{{ package_name }}/features/orders/infra/`.
+- Workflow-heavy feature example: a `billing` or `subscriptions` feature should keep orchestration and business rules in `{{ package_name }}/features/<feature_name>/use_cases/`, expose only feature-level DTOs to runtimes, and keep payment-provider or storage adapters outside the runtime layer.
+- Shared DTO example: if `orders`, `billing`, and HTTP pagination all need the same page container or neutral data shape, place it in `{{ package_name }}/dto/` instead of redefining it inside each feature or runtime schema package.
 - Integration example: if `orders` needs persistence, keep database session handling in `{{ package_name }}/infra/db/`, keep ORM models in `{{ package_name }}/infra/db/models/`, and keep order-specific mapping or repository code near the feature or in explicit infrastructure adapters.
 
 ## Working style
