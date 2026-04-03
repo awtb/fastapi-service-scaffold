@@ -1,0 +1,25 @@
+from fastapi import Request
+from fastapi import status
+from starlette.responses import JSONResponse
+from starlette.responses import Response
+
+_REQUEST_ID_HEADER = "X-Request-ID"
+
+
+def attach_request_id_header(request: Request, response: Response) -> Response:
+    request_id = getattr(request.state, "request_id", None)
+    if isinstance(request_id, str) and _REQUEST_ID_HEADER not in response.headers:
+        response.headers[_REQUEST_ID_HEADER] = request_id
+
+    return response
+
+
+async def handle_unexpected_exception(
+    request: Request,
+    exc: Exception,
+) -> Response:
+    response = JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal Server Error"},
+    )
+    return attach_request_id_header(request, response)
