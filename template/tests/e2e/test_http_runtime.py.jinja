@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from {{ package_name }}.exceptions import ValidationError
 from {{ package_name }}.runtimes.http.app import build_app
 
 
@@ -49,4 +50,19 @@ def test_unhandled_exceptions_return_500_with_request_id(app_env: None) -> None:
 
     assert response.status_code == 500
     assert response.json() == {"detail": "Internal Server Error"}
+    assert "X-Request-ID" in response.headers
+
+
+def test_app_errors_return_400_with_request_id(app_env: None) -> None:
+    app = build_app()
+
+    @app.get("/internal/test-app-error")
+    async def test_app_error() -> None:
+        raise ValidationError("Invalid input.")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get("/internal/test-app-error")
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid input."}
     assert "X-Request-ID" in response.headers
