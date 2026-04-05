@@ -78,14 +78,3 @@ class Settings(BaseSettings):
 
 def get_settings() -> Settings:
     return Settings()
-{% if include_postgresql_integration %}
-
-
-def get_database_settings() -> Settings:
-    return get_settings()
-{% endif %}{% if include_redis_integration %}
-
-
-def get_redis_settings() -> Settings:
-    return get_settings()
-{% endif %}
